@@ -1,28 +1,25 @@
-import os.path
+from os.path import dirname, join
 from typing import Optional
 from pydantic import BaseSettings, SecretStr
+
+PROJECT_ROOT = dirname(dirname(__file__))
+
 
 class Settings(BaseSettings):
     username: Optional[str]
     password: Optional[SecretStr]
     output_path: Optional[str]
-    database_spdx: Optional[str]
+    version_model: Optional[str]
 
     class Config:
+        env_file = '.env.template', '.env'
         env_prefix = 'ECOINVENT_'
+        secrets_dir = join(PROJECT_ROOT, 'secrets')
 
     @property
     def version(self):
-        return self.database_spdx.split('-')[1]
+        return self.version_model.split('-')[1]
 
     @property
     def system_model(self):
-        return self.database_spdx.split('-')[2]
-
-if os.path.exists('eidl/settings/ecoinvent_settings') and os.path.exists('eidl/settings/secrets/ecoinvent_password'):
-    settings = Settings(_env_file='eidl/settings/ecoinvent_settings', _secrets_dir='eidl/settings/secrets')
-elif os.path.exists('eidl/settings/ecoinvent_settings'):
-    settings = Settings(_env_file='eidl/settings/ecoinvent_settings')
-else:
-    settings = {}
-
+        return self.version_model.split('-')[2]

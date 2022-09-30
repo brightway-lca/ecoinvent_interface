@@ -10,19 +10,22 @@ from bw2io import SingleOutputEcospold2Importer, bw2setup
 from bw2data import projects, databases
 
 from eidl.storage import eidlstorage
-from eidl.settings import settings
+from eidl.settings import Settings
 
 
 class EcoinventDownloader:
     def __init__(self, username=None, password=None, version=None,
-                 system_model=None, outdir=None, **kwargs):
-        self.username = username if username else settings.username
-        self.password = password if password else settings.password.get_secret_value()
-        self.version = version if version else settings.version
-        self.system_model = system_model if system_model else settings.system_model
-        self.outdir = outdir if outdir else settings.output_path
+                 system_model=None, outdir=None, store_download=True, **kwargs):
+        settings = Settings()
+        self.username = username or settings.username
+        self.password = password or settings.password.get_secret_value()
+        self.version = version or settings.version
+        self.system_model = system_model or settings.system_model
+        self.outdir = outdir or settings.output_path
+        self.store_download = store_download
         if self.username is None or self.password is None:
             self.username, self.password = self.get_credentials()
+        self.post_download_hook = lambda path, filename: (path, filename)
 
     def run(self):
         if self.check_stored():
@@ -143,21 +146,32 @@ class EcoinventDownloader:
         return dbkey
 
     def download(self):
-        url = 'https://v33.ecoquery.ecoinvent.org'
-        db_key = (self.version, self.system_model)
-        try:
-            file_content = self.session.get(url + self.db_dict[db_key], timeout=60).content
-        except (requests.ConnectTimeout, requests.ReadTimeout, requests.ConnectionError) as e:
-            self.handle_connection_timeout()
-            raise e
+        with tempfile.TemporaryDirectory() as td:
+            download_path = self.outdir
+            if download_path is None:
+                if self.store_download:
+                    download_path = eidlstorage.eidl_dir
+                else:
+                    download_path = td
 
-        if self.outdir:
-            self.out_path = os.path.join(self.outdir, self.file_name)
-        else:
-            self.out_path = os.path.join(os.path.abspath('.'), self.file_name)
 
-        with open(self.out_path, 'wb') as out_file:
-            out_file.write(file_content)
+            url = 'https://v33.ecoquery.ecoinvent.org'
+            db_key = (self.version, self.system_model)
+            try:
+                file_content = self.session.get(url + self.db_dict[db_key], timeout=60).content
+            except (requests.ConnectTimeout, requests.ReadTimeout, requests.ConnectionError) as e:
+                self.handle_connection_timeout()
+                raise e
+
+            self.out_path = os.path.join(download_path, self.file_name)
+
+            with open(self.out_path, 'wb') as out_file:
+                out_file.write(file_content)
+
+            self.extract(target_dir=td)
+            datasets_path = os.path.join(td, 'datasets')
+
+            self.post_download_hook(datasets_path, self.file_name)
 
     def extract(self, target_dir, **kwargs):
         extract_cmd = ['py7zr', 'x', self.out_path, target_dir]
@@ -187,21 +201,20 @@ def get_ecoinvent(db_name=None, auto_write=False, download_path=None, store_down
         version: ecoinvent version (string), eg '3.5'
         system_model: ecoinvent system model (string), one of {'cutoff', 'apos', 'consequential'}
     """
-    with tempfile.TemporaryDirectory() as td:
-        if download_path is None:
-            if store_download:
-                download_path = eidlstorage.eidl_dir
-            else:
-                download_path = td
+    downloader = EcoinventDownloader(outdir=download_path, store_download=store_download, **kwargs)
+    importer = None
 
-        downloader = EcoinventDownloader(outdir=download_path, **kwargs)
-        downloader.run()
-        downloader.extract(target_dir=td)
+    def process_file(datasets_path, file_name):
+        nonlocal importer
+        nonlocal db_name
 
         if not db_name:
-            db_name = downloader.file_name.replace('.7z', '')
-        datasets_path = os.path.join(td, 'datasets')
-        importer = SingleOutputEcospold2Importer(datasets_path, db_name)
+            new_db_name = file_name.replace('.7z', '')
+
+        importer = SingleOutputEcospold2Importer(datasets_path, new_db_name)
+
+    downloader.post_download_hook = process_file
+    downloader.run()
 
     if 'biosphere3' not in databases:
         if auto_write:

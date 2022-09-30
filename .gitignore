@@ -9,5 +9,5 @@ data/*
 .ipynb_checkpoints
 *.swp
 scratch.ipynb
-eidl/settings/*
-
+secrets/*
+.env
