@@ -14,6 +14,35 @@ eidl.get_ecoinvent()
 ```
 You will be asked to enter your ecoinvent username and password, and which version and system model you require. The database will then be added to your brightway2 project. Download and extraction are carried out in the background in a temporary directory, which is cleared after the import and therefore doesn't use up your disk space.
 
+## Configuration
+
+If needed you can create a config file or use environment variables to avoid entering parameters interactively
+
+Environment variables:
+- ECOINVENT_USERNAME
+- ECOINVENT_PASSWORD
+- ECOINVENT_OUTPUT_PATH
+- ECOINVENT_DATABASE_SPDX
+
+You can either set those variable at OS level or you can set them in an environment file.
+The file must be in `eidl/settings/ecoinvent_settings`
+
+Example   
+`eidl/settings/ecoinvent_settings`
+```
+ECOINVENT_USERNAME=Julien_33
+ECOINVENT_OUTPUT_PATH=/Users/duboisst/Downloads
+ECOINVENT_DATABASE_SPDX=ecoinvent-3.8-cutoff
+```
+
+If you want to put the ecoinvent password in a file, you can put it in the file `eidl/settings/secrets/ecoinvent_password`
+
+Example   
+`eidl/settings/secrets/ecoinvent_password`
+```
+MyStrong!Password1234*$£
+```
+
 ## Prerequisites
 
 - Valid [ecoinvent](https://www.ecoinvent.org) login credentials
