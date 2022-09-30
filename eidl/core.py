@@ -20,7 +20,7 @@ class EcoinventDownloader:
                  system_model=None, outdir=None, store_download=True, **kwargs):
         settings = Settings()
         self.username = username or settings.username
-        self.password = password or settings.password.get_secret_value()
+        self.password = password or settings.password.get_secret_value() if settings.password else None
         self.version = version or settings.version
         self.system_model = system_model or settings.system_model
         self.outdir = outdir or settings.output_path
@@ -64,6 +64,10 @@ class EcoinventDownloader:
                            f'Choose one of the following: {available_spdx}')
         return db_sui_version, db_sui_sm
 
+    def _download_mapping(self, spdx, saveto):
+        self._download_one(f'https://ecoinvent.org/public/{spdx}_url_ids.csv', saveto)
+        #!FIXME: what if 404 because not 3.8
+
     def get_pdf(self, activity_name, geography, reference_product):
         """
         Given the input parameters, download a PDF from ecoinvent's website.
@@ -71,9 +75,11 @@ class EcoinventDownloader:
         :param geography
         :param reference_product
         """
-        csv_dir = eidlstorage.eidl_dir
-        filename = os.path.join(csv_dir, f'ei-{self.version}-{self.system_model}_url_ids.csv')
-        with open(filename, mode='r') as f:
+        spdx = f'ei-{self.version}-{self.system_model}'
+        file_path = os.path.join(eidlstorage.eidl_dir, f'{spdx}_url_ids.csv')
+        if not os.path.exists(file_path):
+            self._download_mapping(spdx=spdx, saveto=file_path)
+        with open(file_path, mode='r') as f:
             csvfile = csv.reader(f)
             for line in csvfile:
                 if line[0:3] == [activity_name, geography, reference_product]:
@@ -97,7 +103,10 @@ class EcoinventDownloader:
             return False
 
     def get_credentials(self):
-        un = input('ecoinvent username: ')
+        if not self.username:
+            un = input('ecoinvent username: ')
+        else:
+            un = self.username
         pw = getpass.getpass('ecoinvent password: ')
         return un, pw
 
@@ -213,6 +222,10 @@ class EcoinventDownloader:
         db_num = db_version.replace('.', '')
         return f'https://v{db_num}.ecoquery.ecoinvent.org/Details/PDF/{pdf_id}'
 
+    def _get_pdf_url(self, db_version, pdf_id):
+        db_num = db_version.replace('.', '')
+        return f'https://v{db_num}.ecoquery.ecoinvent.org/Details/PDF/{pdf_id}'
+
     def download(self):
         with tempfile.TemporaryDirectory() as td:
             download_path = self.outdir
@@ -289,7 +302,7 @@ def get_ecoinvent(db_name=None, auto_write=False, outdir=None, store_download=Tr
             downloader.set_with_spdx(db_name)
         if not db_name:
             db_name = f'ei-{downloader.version}-{downloader.system_model}'
-
+        datasets_path = os.path.join(outdir, 'datasets')
         importer = SingleOutputEcospold2Importer(datasets_path, db_name)
 
     downloader.post_download_hook = process_file
@@ -324,6 +337,7 @@ def get_ecoinvent(db_name=None, auto_write=False, outdir=None, store_download=Tr
 def get_ecoinvent_cli():
     downloader = EcoinventDownloader()
     downloader.run()
+
 
 def get_pdf(spdx, activity_name, geography, reference_product, **kwargs):
     """
