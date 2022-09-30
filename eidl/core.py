@@ -21,22 +21,17 @@ class EcoinventDownloader:
         self.version = version if version else settings.version
         self.system_model = system_model if system_model else settings.system_model
         self.outdir = outdir if outdir else settings.output_path
+        if self.username is None or self.password is None:
+            self.username, self.password = self.get_credentials()
 
     def run(self):
         if self.check_stored():
             return
-        if self.username is None or self.password is None:
-            self.username, self.password = self.get_credentials()
+        
         print('logging in to ecoinvent homepage...')
         self.login()
         self.db_dict = self.get_available_files()
         print('login successful!')
-
-        print(settings)
-        
-        print(self.db_dict.keys())
-
-        print(self.version, self.system_model)
 
         if (self.version, self.system_model) not in self.db_dict.keys():
             self.version, self.system_model = self.choose_db()
