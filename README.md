@@ -24,21 +24,20 @@ Environment variables:
 - ECOINVENT_OUTPUT_PATH
 - ECOINVENT_DATABASE_SPDX
 
-You can either set those variable at OS level or you can set them in an environment file.
-The file must be in `eidl/settings/ecoinvent_settings`
+You can either set those variable at OS level or you can set them in an .env environment file.
 
 Example   
-`eidl/settings/ecoinvent_settings`
+`.env`
 ```
-ECOINVENT_USERNAME=Julien_33
-ECOINVENT_OUTPUT_PATH=/Users/duboisst/Downloads
-ECOINVENT_DATABASE_SPDX=ecoinvent-3.8-cutoff
+ECOINVENT_USERNAME=my_user_name
+ECOINVENT_OUTPUT_PATH=/path/to/download
+ECOINVENT_DATABASE_SPDX=ei-3.8-cutoff
 ```
 
-If you want to put the ecoinvent password in a file, you can put it in the file `eidl/settings/secrets/ecoinvent_password`
+If you want to put the ecoinvent password in a file, you can put it in the file `secrets/ecoinvent_password`
 
 Example   
-`eidl/settings/secrets/ecoinvent_password`
+`secrets/ecoinvent_password`
 ```
 MyStrong!Password1234*$£
 ```

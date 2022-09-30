@@ -246,6 +246,3 @@ def get_ecoinvent_cli():
     downloader = EcoinventDownloader()
     downloader.run()
 
-def get_pdf():
-    print('pdf download')
-    print(settings)
