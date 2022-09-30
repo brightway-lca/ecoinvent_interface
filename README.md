@@ -47,4 +47,15 @@ bw.bw2setup()
 eidl.get_ecoinvent()
 ```
 
+To download a PDF:
+
+```python
+import eidl
+eidl.get_pdf('ei-3.8-cutoff',
+             'liquid crystal display production, unmounted, mobile device',
+             'GLO',
+             'liquid crystal display, unmounted, mobile device',
+             outdir='foo')
+```
+
 See also the [example notebook](./example_usage.ipynb) for more details.
