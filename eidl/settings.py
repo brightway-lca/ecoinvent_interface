@@ -26,4 +26,3 @@ elif os.path.exists('eidl/settings/ecoinvent_settings'):
 else:
     settings = {}
 
-print(settings)
