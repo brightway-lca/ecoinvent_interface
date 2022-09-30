@@ -249,10 +249,9 @@ class EcoinventDownloader:
             with open(self.out_path, 'wb') as out_file:
                 out_file.write(file_content)
 
-            self.extract(target_dir=td)
-            datasets_path = os.path.join(td, 'datasets')
+            self.extract(target_dir=download_path)
 
-            self.post_download_hook(datasets_path, self.file_name)
+            self.post_download_hook(download_path, self.file_name)
 
     def extract(self, target_dir, **kwargs):
         extract_cmd = ['py7zr', 'x', self.out_path, target_dir]
@@ -271,7 +270,7 @@ class EcoinventDownloader:
         self.version, self.system_model = self.get_db_sui(spdx)
 
 
-def get_ecoinvent(db_name=None, auto_write=False, outdir=None, store_download=True, **kwargs):
+def get_ecoinvent(db_name=None, auto_write=False, outdir=None, download_path=None, store_download=True, **kwargs):
     """
     Download and import ecoinvent to current brightway2 project
     Args:
@@ -294,7 +293,7 @@ def get_ecoinvent(db_name=None, auto_write=False, outdir=None, store_download=Tr
     downloader.login()
     downloader.db_dict = downloader.get_available_files()
 
-    def process_file(datasets_path, file_name):
+    def process_file(path, file_name):
         nonlocal importer
         nonlocal db_name
 
@@ -302,7 +301,7 @@ def get_ecoinvent(db_name=None, auto_write=False, outdir=None, store_download=Tr
             downloader.set_with_spdx(db_name)
         if not db_name:
             db_name = f'ei-{downloader.version}-{downloader.system_model}'
-        datasets_path = os.path.join(outdir, 'datasets')
+        datasets_path = os.path.join(path, 'datasets')
         importer = SingleOutputEcospold2Importer(datasets_path, db_name)
 
     downloader.post_download_hook = process_file
