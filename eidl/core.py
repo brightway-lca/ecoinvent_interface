@@ -10,16 +10,17 @@ from bw2io import SingleOutputEcospold2Importer, bw2setup
 from bw2data import projects, databases
 
 from eidl.storage import eidlstorage
+from eidl.settings import settings
 
 
 class EcoinventDownloader:
     def __init__(self, username=None, password=None, version=None,
                  system_model=None, outdir=None, **kwargs):
-        self.username = username
-        self.password = password
-        self.version = version
-        self.system_model = system_model
-        self.outdir = outdir
+        self.username = username if username else settings.username
+        self.password = password if password else settings.password.get_secret_value()
+        self.version = version if version else settings.version
+        self.system_model = system_model if system_model else settings.system_model
+        self.outdir = outdir if outdir else settings.output_path
 
     def run(self):
         if self.check_stored():
@@ -30,6 +31,13 @@ class EcoinventDownloader:
         self.login()
         self.db_dict = self.get_available_files()
         print('login successful!')
+
+        print(settings)
+        
+        print(self.db_dict.keys())
+
+        print(self.version, self.system_model)
+
         if (self.version, self.system_model) not in self.db_dict.keys():
             self.version, self.system_model = self.choose_db()
         if self.check_stored():
@@ -229,3 +237,7 @@ def get_ecoinvent(db_name=None, auto_write=False, download_path=None, store_down
 def get_ecoinvent_cli():
     downloader = EcoinventDownloader()
     downloader.run()
+
+def get_pdf():
+    print('pdf download')
+    print(settings)
