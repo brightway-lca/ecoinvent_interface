@@ -5,6 +5,7 @@ import tempfile
 import getpass
 import subprocess
 import re
+import webbrowser
 
 import requests
 import bs4
@@ -13,6 +14,19 @@ from bw2data import projects, databases
 
 from eidl.storage import eidlstorage
 from eidl.settings import Settings
+
+
+class NotLoggedIn(BaseException):
+    """Operation not possible because not logged in"""
+    pass
+
+
+def logged_in(f):
+    def wrapper(self, *args, **kwargs):
+        if not hasattr(self, "session"):
+            raise NotLoggedIn("Must call `.login()` first")
+        return f(self, *args, **kwargs)
+    return wrapper
 
 
 class EcoinventDownloader:
@@ -68,6 +82,7 @@ class EcoinventDownloader:
         self._download_one(f'https://ecoinvent.org/public/{spdx}_url_ids.csv', saveto)
         #!FIXME: what if 404 because not 3.8
 
+    @logged_in
     def get_webpage(self, activity_name, geography, reference_product, open_tab=True):
         spdx = f'ei-{self.version}-{self.system_model}'
         file_path = os.path.join(eidlstorage.eidl_dir, f'{spdx}_url_ids.csv')
@@ -89,6 +104,7 @@ class EcoinventDownloader:
         else:
             return url
 
+    @logged_in
     def get_pdf(self, activity_name, geography, reference_product):
         """
         Given the input parameters, download a PDF from ecoinvent's website.
@@ -166,8 +182,10 @@ class EcoinventDownloader:
                 "Example: eidl.get_ecoinvent(version='3.5', system_model='cutoff')"
             )
 
+    @logged_in
     def get_available_files(self):
         files_url = 'https://v38.ecoquery.ecoinvent.org/File/Files'
+        
         try:
             files_res = self.session.get(files_url, timeout=20)
         except (requests.ConnectTimeout, requests.ReadTimeout, requests.ConnectionError) as e:
@@ -216,6 +234,7 @@ class EcoinventDownloader:
                  sm_dict.get(sm, sm))
         return dbkey
 
+    @logged_in
     def _download_one(self, url: str, output_file_name: str):
         """
         Download a file given the full URL
@@ -243,10 +262,7 @@ class EcoinventDownloader:
         db_num = db_version.replace('.', '')
         return f'https://v{db_num}.ecoquery.ecoinvent.org/Details/PDF/{pdf_id}'
 
-    def _get_pdf_url(self, db_version, pdf_id):
-        db_num = db_version.replace('.', '')
-        return f'https://v{db_num}.ecoquery.ecoinvent.org/Details/PDF/{pdf_id}'
-
+    @logged_in
     def download(self):
         with tempfile.TemporaryDirectory() as td:
             download_path = self.outdir
