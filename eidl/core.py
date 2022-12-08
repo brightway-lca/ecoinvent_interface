@@ -68,6 +68,27 @@ class EcoinventDownloader:
         self._download_one(f'https://ecoinvent.org/public/{spdx}_url_ids.csv', saveto)
         #!FIXME: what if 404 because not 3.8
 
+    def get_webpage(self, activity_name, geography, reference_product, open_tab=True):
+        spdx = f'ei-{self.version}-{self.system_model}'
+        file_path = os.path.join(eidlstorage.eidl_dir, f'{spdx}_url_ids.csv')
+        if not os.path.exists(file_path):
+            self._download_mapping(spdx=spdx, saveto=file_path)
+        with open(file_path, mode='r') as f:
+            csvfile = csv.reader(f)
+            for line in csvfile:
+                if line[0:3] == [activity_name, geography, reference_product]:
+                    pdf_id = line[-1]
+                    break
+
+        url = 'https://v{db_num}.ecoquery.ecoinvent.org/Details/UPR/{pdf_id}'.format(
+            db_num=self.version.replace('.', ''),
+            pdf_id=pdf_id,
+        )
+        if open_tab:
+            webbrowser.open_new_tab(url)
+        else:
+            return url
+
     def get_pdf(self, activity_name, geography, reference_product):
         """
         Given the input parameters, download a PDF from ecoinvent's website.
