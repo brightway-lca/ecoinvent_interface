@@ -1,89 +1,161 @@
-[![Anaconda-Server Badge](https://anaconda.org/haasad/eidl/badges/version.svg)](https://anaconda.org/haasad/eidl) [![Anaconda-Server Badge](https://anaconda.org/haasad/eidl/badges/latest_release_date.svg)](https://anaconda.org/haasad/eidl) [![Anaconda-Server Badge](https://anaconda.org/haasad/eidl/badges/downloads.svg)](https://anaconda.org/haasad/eidl) [![Build Status](https://travis-ci.org/haasad/EcoInventDownLoader.svg?branch=master)](https://travis-ci.org/haasad/EcoInventDownLoader)
-# EcoInventDownLoader (eidl)
+# ecoinvent_interface
 
-The EcoInventDownLoader (eidl) is a small python package that automates the somewhat tedious process of adding an ecoinvent database to your [brightway2](https://brightway.dev/) project. Without `eidl` the following steps are required:
+[![PyPI](https://img.shields.io/pypi/v/ecoinvent_interface.svg)][pypi status]
+[![Status](https://img.shields.io/pypi/status/ecoinvent_interface.svg)][pypi status]
+[![Python Version](https://img.shields.io/pypi/pyversions/ecoinvent_interface)][pypi status]
+[![License](https://img.shields.io/pypi/l/ecoinvent_interface)][license]
 
-- Login to the ecoinvent homepage
-- Choose and download the required database
-- Unpack the 7z-archive on your computer (which will take up close to 2GB of disk space)
-- Import the ecospold2 files with the `bw2io.SingleOutputEcospoldImporter`
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)][pre-commit]
+[![Black](https://img.shields.io/badge/code%20style-black-000000.svg)][black]
 
-With `eidl`, the above steps can all be carried out with a single command from a jupyter notebook or any python shell:
-```
-eidl.get_ecoinvent()
-```
-You will be asked to enter your ecoinvent username and password, and which version and system model you require. The database will then be added to your brightway2 project. Download and extraction are carried out in the background in a temporary directory, which is cleared after the import and therefore doesn't use up your disk space.
-
-## Configuration
-
-If needed you can create a config file or use environment variables to avoid entering parameters interactively
-
-Environment variables:
-- ECOINVENT_USERNAME
-- ECOINVENT_PASSWORD
-- ECOINVENT_OUTPUT_PATH
-- ECOINVENT_DATABASE_SPDX
-
-You can either set those variable at OS level or you can set them in an .env environment file.
-
-Example   
-`.env`
-```
-ECOINVENT_USERNAME=my_user_name
-ECOINVENT_OUTPUT_PATH=/path/to/download
-ECOINVENT_DATABASE_SPDX=ei-3.8-cutoff
-```
-
-If you want to put the ecoinvent password in a file, you can put it in the file `secrets/ecoinvent_password`
-
-Example   
-`secrets/ecoinvent_password`
-```
-MyStrong!Password1234*$£
-```
-
-## Prerequisites
-
-- Valid [ecoinvent](https://www.ecoinvent.org) login credentials
-
-## Installation
-
-- Add the required conda channels to your conda config file, if you haven't done so already (ie. for the installation of brightway2):
-```
-conda config --append channels conda-forge
-conda config --append channels cmutel
-conda config --append channels haasad
-```
-- Simply install with conda:
-```
-conda install eidl
-```
-- ___Alternatively___ you can install `eidl` without adding the channels permanently:
-```
-conda install -c defaults -c conda-forge -c cmutel -c haasad eidl
-```
+This is an **unofficial and unsupported** Python library to get ecoinvent data.
 
 ## Usage
 
-```python
-import eidl
-import brightway2 as bw
+### Authentication
 
-bw.projects.set_current('eidl_demo')
+### `EcoinventInterface` instantiation
 
-bw.bw2setup()
-eidl.get_ecoinvent()
-```
-
-To download a PDF:
+To interact with the ecoinvent website, instantiate `EcoinventInterface`. You can specify your credentials manually when creating the class instance, or with the approaches outlined above.
 
 ```python
-import eidl
-eidl.get_pdf('ei-3.8-cutoff',
-             'liquid crystal display production, unmounted, mobile device',
-             'GLO',
-             'liquid crystal display, unmounted, mobile device',
-             outdir='foo')
+from ecoinvent_interface import EcoinventInterface, ReleaseType, CachedStorage
+ei = EcoinventInterface()
 ```
 
-See also the [example notebook](./example_usage.ipynb) for more details.
+All operations with `EcoinventInterface` require a valid login:
+
+```python
+ei.login()
+```
+
+You need to choose a valid version. You can list the version identifiers:
+
+```python
+ei.get_versions()
+>>> ['3.9.1',
+ '3.9',
+ '3.8',
+ '3.7.1',
+ '3.7',
+ ...]
+```
+
+### `EcoinventInterface` *extra* files
+
+There are two kinds of files available: *release* files, and what we call *extra* files. Let's see the *extra* files for version `'3.7.1'`:
+
+```python
+ei.get_extra_files('3.7.1')
+>>>  'ecoinvent 3.7.1_LCIA_implementation.7z': {
+  'uuid': ...,
+  'size': ...,
+  'modified': datetime.datetime(2023, 4, 25, 0, 0)
+}
+```
+
+This returns a dictionary of filenames and metadata. We can download this 'ecoinvent 3.7.1_LCIA_implementation.7z'; by default it will automatically be extracted.
+
+
+```python
+ei.get_extra(version='3.7.1', filename='ecoinvent 3.7.1_LCIA_implementation.7z')
+>>> PosixPath('/Users/<your username>/Library/Application Support/EcoinventInterface/cache/ecoinvent 3.7.1_LCIA_implementation')
+```
+
+The default cache uses [platformdirs](https://platformdirs.readthedocs.io/en/latest/), and the directory location is OS-dependent. You can use a custom cache directory with by specifying `output_dir` when creating the `EcoinventInterface` class instance.
+
+You can work with the cache when offline:
+
+```python
+cs = CachedStorage()
+list(cs.catalogue)
+>>> ['ecoinvent 3.7.1_LCIA_implementation.7z']
+cs.catalogue['ecoinvent 3.7.1_LCIA_implementation.7z']
+>>> {
+  'path': '/Users/<your username>/Library/Application Support/EcoinventInterface/cache/ecoinvent 3.7.1_LCIA_implementation',
+  'extracted': True,
+  'created': '2023-09-03T20:23:57.186519'
+}
+```
+
+### `EcoinventInterface` *release* files
+
+But most of you are here for the *release* files. We first need to figure what system models are available for our desired version:
+
+```python
+ei.get_system_models('3.7.1')
+>>> ['cutoff', 'consequential', 'apos']
+```
+
+The ecoinvent API uses a short and long form of the system model names; you can get the longer names by passing `translate=False`. You can use either form in all `EcoinventInterface` methods.
+
+```python
+ei.get_system_models('3.7.1', translate=False)
+>>> [
+  'Allocation cut-off by classification',
+  'Substitution, consequential, long-term',
+  'Allocation at the Point of Substitution'
+]
+```
+
+Release files have one more complication - the release type. You need to choose from one of:
+
+* ecospold
+* matrix
+* lci
+* lcia
+* cumulative_lci
+* cumulative_lcia
+
+See the ecoinvent website for information on what these values mean. We need to pass in an option for the `ReleaseType` enum when asking for a release file.
+
+```python
+ei.get_release('3.7.1', 'apos', ReleaseType.matrix)
+>>> PosixPath('/Users/<your username>/Library/Application Support/'
+              'EcoinventInterface/cache/universal_matrix_export_3.7.1_apos')
+```
+
+## Relationship to EIDL
+
+This library initially started as a fork of [EIDL](https://github.com/haasad/EcoInventDownLoader), the ecoinvent downloader. As of version 2.0, it has been completely rewritten. Currently only the authentication code comes from `EIDL`.
+
+Differences with `EIDL`:
+
+* Designed to be an infrastructure library. All user web browser interaction was removed.
+* Username and password can be specified using [pydantic_settings](https://docs.pydantic.dev/latest/usage/pydantic_settings/).
+* Can download all release and extra file types.
+* Will autocorrect filenames when possible for ecoinvent inconsistencies.
+* Uses a more robust caching and cache validation strategy.
+* More reasonable token refresh strategy.
+* No HTML or filename string hacks.
+* Streaming downloads.
+* Descriptive logging and error messages.
+* No shortcuts for Brightway or other LCA software.
+* Custom headers are set to allow users of this library to be identified. No user information is transmitted.
+
+## Contributing
+
+Contributions are very welcome, but please note the following:
+
+* This library consumes an unpublished an under development API
+* Extensions of the current API to get process LCI or LCIA data or LCIA scores won't be included
+* Brightway-specific code won't be included
+
+To learn more, see the [Contributor Guide].
+
+## License
+
+Distributed under the terms of the [MIT license][license],
+_ecoinvent_interface_ is free and open source software.
+
+## Issues
+
+If you encounter any problems,
+please [file an issue] along with a detailed description.
+
+
+<!-- github-only -->
+
+[command-line reference]: https://ecoinvent_interface.readthedocs.io/en/latest/usage.html
+[license]: https://github.com/brightway-lca/ecoinvent_interface/blob/main/LICENSE
+[contributor guide]: https://github.com/brightway-lca/ecoinvent_interface/blob/main/CONTRIBUTING.md
