@@ -14,6 +14,12 @@ This is an **unofficial and unsupported** Python library to get ecoinvent data.
 
 ### Authentication
 
+Note that you **must accept** the ecoinvent license via the website before using your user account via this library.
+
+TBD: Environment variables
+
+TBD: `.env` file and creation utility
+
 ### `EcoinventInterface` instantiation
 
 To interact with the ecoinvent website, instantiate `EcoinventInterface`. You can specify your credentials manually when creating the class instance, or with the approaches outlined above.
@@ -47,19 +53,22 @@ There are two kinds of files available: *release* files, and what we call *extra
 
 ```python
 ei.get_extra_files('3.7.1')
->>>  'ecoinvent 3.7.1_LCIA_implementation.7z': {
-  'uuid': ...,
-  'size': ...,
-  'modified': datetime.datetime(2023, 4, 25, 0, 0)
+>>>  {'ecoinvent 3.7.1_LCIA_implementation.7z': {
+    'uuid': ...,
+    'size': ...,
+    'modified': datetime.datetime(2023, 4, 25, 0, 0)
+  },
+  ...
 }
 ```
 
-This returns a dictionary of filenames and metadata. We can download this 'ecoinvent 3.7.1_LCIA_implementation.7z'; by default it will automatically be extracted.
+This returns a dictionary of filenames and metadata. We can download the 'ecoinvent 3.7.1_LCIA_implementation.7z' file; by default it will automatically be extracted.
 
 
 ```python
 ei.get_extra(version='3.7.1', filename='ecoinvent 3.7.1_LCIA_implementation.7z')
->>> PosixPath('/Users/<your username>/Library/Application Support/EcoinventInterface/cache/ecoinvent 3.7.1_LCIA_implementation')
+>>> PosixPath('/Users/<your username>/Library/Application Support'
+              '/EcoinventInterface/cache/ecoinvent 3.7.1_LCIA_implementation')
 ```
 
 The default cache uses [platformdirs](https://platformdirs.readthedocs.io/en/latest/), and the directory location is OS-dependent. You can use a custom cache directory with by specifying `output_dir` when creating the `EcoinventInterface` class instance.
@@ -72,7 +81,8 @@ list(cs.catalogue)
 >>> ['ecoinvent 3.7.1_LCIA_implementation.7z']
 cs.catalogue['ecoinvent 3.7.1_LCIA_implementation.7z']
 >>> {
-  'path': '/Users/<your username>/Library/Application Support/EcoinventInterface/cache/ecoinvent 3.7.1_LCIA_implementation',
+  'path': '/Users/<your username>/Library/Application Support/'
+          'EcoinventInterface/cache/ecoinvent 3.7.1_LCIA_implementation',
   'extracted': True,
   'created': '2023-09-03T20:23:57.186519'
 }
@@ -80,7 +90,7 @@ cs.catalogue['ecoinvent 3.7.1_LCIA_implementation.7z']
 
 ### `EcoinventInterface` *release* files
 
-But most of you are here for the *release* files. We first need to figure what system models are available for our desired version:
+Most of you are here for the *release* files. We first need to figure what system models are available for our desired version:
 
 ```python
 ei.get_system_models('3.7.1')
@@ -100,17 +110,17 @@ ei.get_system_models('3.7.1', translate=False)
 
 Release files have one more complication - the release type. You need to choose from one of:
 
-* ecospold
-* matrix
-* lci
-* lcia
-* cumulative_lci
-* cumulative_lcia
+* `ecospold`: The single-output unit process files in ecospold2 XML format
+* `matrix`: The so-called "universaml matrix export"
+* `lci`: LCI data in ecospold2 XML format
+* `lcia`: LCIA data in ecospold2 XML format
+* `cumulative_lci`: LCI data in Excel
+* `cumulative_lcia`: LCIA data in Excel
 
-See the ecoinvent website for information on what these values mean. We need to pass in an option for the `ReleaseType` enum when asking for a release file.
+See the ecoinvent website for information on what these values mean. We need to pass in an option for the `ReleaseType` enum when asking for a release file. We use the enum to guess the filenames.
 
 ```python
-ei.get_release('3.7.1', 'apos', ReleaseType.matrix)
+ei.get_release(version='3.7.1', system_model='apos', release_type=ReleaseType.matrix)
 >>> PosixPath('/Users/<your username>/Library/Application Support/'
               'EcoinventInterface/cache/universal_matrix_export_3.7.1_apos')
 ```
@@ -121,7 +131,7 @@ This library initially started as a fork of [EIDL](https://github.com/haasad/Eco
 
 Differences with `EIDL`:
 
-* Designed to be an infrastructure library. All user web browser interaction was removed.
+* Designed to be a lower-level infrastructure library. All user and web browser interaction was removed.
 * Username and password can be specified using [pydantic_settings](https://docs.pydantic.dev/latest/usage/pydantic_settings/).
 * Can download all release and extra file types.
 * Will autocorrect filenames when possible for ecoinvent inconsistencies.
@@ -131,7 +141,7 @@ Differences with `EIDL`:
 * Streaming downloads.
 * Descriptive logging and error messages.
 * No shortcuts for Brightway or other LCA software.
-* Custom headers are set to allow users of this library to be identified. No user information is transmitted.
+* Custom library headers are set to allow users of this library to be identified. No user information is transmitted.
 
 ## Contributing
 
