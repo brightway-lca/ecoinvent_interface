@@ -2,18 +2,19 @@ import json
 import logging
 import shutil
 import urllib
-from time import time
-from typing import Optional
+from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from datetime import datetime
+from time import time
+from typing import Optional
 
 import py7zr
 import requests
 from Levenshtein import distance
 
-from .storage import CachedStorage
+from . import __version__
 from .settings import Settings
+from .storage import CachedStorage
 
 
 class NotLoggedIn(BaseException):
@@ -125,7 +126,8 @@ class EcoinventInterface:
     def _get_credentials(self, post_data: dict) -> None:
         sso_url = self.urls["sso"]
         headers = {
-            "ecoinvent-api-client-library": "ecoinvent_interface 2.0"
+            "ecoinvent-api-client-library": "ecoinvent_interface",
+            "ecoinvent-api-client-library-version": __version__,
         } | self.custom_headers
         response = requests.post(sso_url, post_data, headers=headers, timeout=20)
 
@@ -145,7 +147,8 @@ class EcoinventInterface:
         files_url = self.urls["api"] + "files"
         headers = {
             "Authorization": f"Bearer {self.access_token}",
-            "ecoinvent-api-client-library": "ecoinvent_interface 2.0",
+            "ecoinvent-api-client-library": "ecoinvent_interface",
+            "ecoinvent-api-client-library-version": __version__,
         } | self.custom_headers
         files_res = requests.get(files_url, headers=headers, timeout=20)
         return files_res.json()
@@ -184,7 +187,10 @@ class EcoinventInterface:
                 return Path(cache_meta["path"])
 
         filepath = self._download_s3(
-            uuid=uuid, filename=filename, url_namespace=url_namespace, directory=self.storage.dir
+            uuid=uuid,
+            filename=filename,
+            url_namespace=url_namespace,
+            directory=self.storage.dir,
         )
 
         try:
@@ -220,11 +226,14 @@ Proceeding anyways as no download error occurred."""
             return filepath
 
     @fresh_login
-    def _download_s3(self, uuid: str, filename: str, url_namespace: str, directory: Path) -> Path:
+    def _download_s3(
+        self, uuid: str, filename: str, url_namespace: str, directory: Path
+    ) -> Path:
         url = f"https://api.ecoquery.ecoinvent.org/files/{url_namespace}/{uuid}"
         headers = {
             "Authorization": f"Bearer {self.access_token}",
-            "ecoinvent-api-client-library": "ecoinvent_interface 2.0",
+            "ecoinvent-api-client-library": "ecoinvent_interface",
+            "ecoinvent-api-client-library-version": __version__,
         } | self.custom_headers
         s3_link = requests.get(url, headers=headers, timeout=20).json()["download_url"]
 
@@ -273,7 +282,7 @@ Proceeding anyways as no download error occurred."""
             uuid=available_files[filename]["uuid"],
             modified=available_files[filename]["modified"],
             expected_size=available_files[filename]["size"],
-            url_namespace='v',
+            url_namespace="v",
             extract=extract,
             force_redownload=force_redownload,
         )
@@ -322,7 +331,7 @@ Proceeding anyways as no download error occurred."""
             uuid=available_files[filename]["uuid"],
             modified=available_files[filename]["modified"],
             expected_size=available_files[filename]["size"],
-            url_namespace='r',
+            url_namespace="r",
             extract=extract,
             force_redownload=force_redownload,
         )
