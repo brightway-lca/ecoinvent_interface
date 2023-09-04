@@ -38,7 +38,7 @@ ei.login()
 You need to choose a valid version. You can list the version identifiers:
 
 ```python
-ei.get_versions()
+ei.list_versions()
 >>> ['3.9.1',
  '3.9',
  '3.8',
@@ -52,7 +52,7 @@ ei.get_versions()
 There are two kinds of files available: *release* files, and what we call *extra* files. Let's see the *extra* files for version `'3.7.1'`:
 
 ```python
-ei.get_extra_files('3.7.1')
+ei.list_extra_files('3.7.1')
 >>>  {'ecoinvent 3.7.1_LCIA_implementation.7z': {
     'uuid': ...,
     'size': ...,
@@ -93,14 +93,14 @@ cs.catalogue['ecoinvent 3.7.1_LCIA_implementation.7z']
 Most of you are here for the *release* files. We first need to figure what system models are available for our desired version:
 
 ```python
-ei.get_system_models('3.7.1')
+ei.list_system_models('3.7.1')
 >>> ['cutoff', 'consequential', 'apos']
 ```
 
 The ecoinvent API uses a short and long form of the system model names; you can get the longer names by passing `translate=False`. You can use either form in all `EcoinventInterface` methods.
 
 ```python
-ei.get_system_models('3.7.1', translate=False)
+ei.list_system_models('3.7.1', translate=False)
 >>> [
   'Allocation cut-off by classification',
   'Substitution, consequential, long-term',

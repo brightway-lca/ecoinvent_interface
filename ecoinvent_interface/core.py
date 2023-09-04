@@ -280,16 +280,18 @@ Proceeding anyways as no download error occurred."""
 
         return directory / filename
 
-    def get_versions(self) -> list:
+    def list_versions(self) -> list:
         return [obj["version_name"] for obj in self._get_all_files()]
 
-    def get_system_models(self, version: str, translate: Optional[bool] = True) -> list:
+    def list_system_models(
+        self, version: str, translate: Optional[bool] = True
+    ) -> list:
         releases = [obj["system_model_name"] for obj in self.get_release_files(version)]
         if translate:
             releases = [SYSTEM_MODELS.get(key, key) for key in releases]
         return releases
 
-    def get_report_files(self) -> dict:
+    def list_report_files(self) -> dict:
         return {obj["name"]: format_dict(obj) for obj in self._get_all_reports()}
 
     def get_report(
@@ -298,7 +300,7 @@ Proceeding anyways as no download error occurred."""
         extract: Optional[bool] = True,
         force_redownload: Optional[bool] = False,
     ) -> Path:
-        reports = self.get_report_files()
+        reports = self.list_report_files()
         return self._download_and_cache(
             filename=filename,
             uuid=reports[filename]["uuid"],
@@ -309,7 +311,7 @@ Proceeding anyways as no download error occurred."""
             force_redownload=force_redownload,
         )
 
-    def get_extra_files(self, version: str) -> dict:
+    def list_extra_files(self, version: str) -> dict:
         return {
             obj["name"]: format_dict(obj)
             for obj in self._get_files_for_version(version=version)["version_files"]
@@ -322,7 +324,7 @@ Proceeding anyways as no download error occurred."""
         extract: Optional[bool] = True,
         force_redownload: Optional[bool] = False,
     ) -> Path:
-        available_files = self.get_extra_files(version=version)
+        available_files = self.list_extra_files(version=version)
         return self._download_and_cache(
             filename=filename,
             uuid=available_files[filename]["uuid"],
