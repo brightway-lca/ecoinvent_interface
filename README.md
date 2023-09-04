@@ -171,7 +171,7 @@ Differences with `EIDL`:
 
 Contributions are very welcome, but please note the following:
 
-* This library consumes an unpublished an under development API
+* This library consumes and unpublished an under development API
 * Extensions of the current API to get process LCI or LCIA data or LCIA scores won't be included
 * Brightway-specific code won't be included
 
