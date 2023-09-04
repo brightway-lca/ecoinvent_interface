@@ -49,7 +49,7 @@ ei.list_versions()
 
 ### `EcoinventInterface` *extra* files
 
-There are two kinds of files available: *release* files, and what we call *extra* files. Let's see the *extra* files for version `'3.7.1'`:
+There are three kinds of files available: *reports*, *documentation* files, and what we call *extra* files. Let's see the *extra* files for version `'3.7.1'`:
 
 ```python
 ei.list_extra_files('3.7.1')
@@ -125,6 +125,30 @@ ei.get_release(version='3.7.1', system_model='apos', release_type=ReleaseType.ma
               'EcoinventInterface/cache/universal_matrix_export_3.7.1_apos')
 ```
 
+### `EcoinventInterface` *reports*
+
+Reports require a login but not a version number:
+
+```python
+ei.list_report_files()
+>>> {'Allocation, cut-off, EN15804_documentation.pdf': {
+    'uuid': ...,
+    'size': ...,
+    'modified': datetime.datetime(2021, 10, 1, 0, 0),
+    'description': 'This document provides a documentation on the calculation of the indicators in the “Allocation, cut-off, EN15804” system model.'
+  },
+}
+```
+
+Downloading follows the same pattern as before:
+
+```python
+ei.get_report('Allocation, cut-off, EN15804_documentation.pdf')
+>>> PosixPath('/Users/<your username>/Library/Application Support/EcoinventInterface/cache/Allocation, cut-off, EN15804_documentation.pdf')
+```
+
+Zip and 7z files are extracted by default.
+
 ## Relationship to EIDL
 
 This library initially started as a fork of [EIDL](https://github.com/haasad/EcoInventDownLoader), the ecoinvent downloader. As of version 2.0, it has been completely rewritten. Currently only the authentication code comes from `EIDL`.
@@ -133,7 +157,7 @@ Differences with `EIDL`:
 
 * Designed to be a lower-level infrastructure library. All user and web browser interaction was removed.
 * Username and password can be specified using [pydantic_settings](https://docs.pydantic.dev/latest/usage/pydantic_settings/).
-* Can download all release and extra file types.
+* Can download all release files, plus reports and "extra" files.
 * Will autocorrect filenames when possible for ecoinvent inconsistencies.
 * Uses a more robust caching and cache validation strategy.
 * More reasonable token refresh strategy.
