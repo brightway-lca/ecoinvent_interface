@@ -255,7 +255,7 @@ Proceeding anyways as no download error occurred."""
     def _download_s3(
         self, uuid: str, filename: str, url_namespace: str, directory: Path
     ) -> Path:
-        url = f"https://api.ecoquery.ecoinvent.org/files/{url_namespace}/{uuid}"
+        url = self.urls["api"] + f"files/{url_namespace}/{uuid}"
         headers = {
             "Authorization": f"Bearer {self.access_token}",
             "ecoinvent-api-client-library": "ecoinvent_interface",
