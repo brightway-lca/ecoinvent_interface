@@ -1,7 +1,6 @@
 import json
 import logging
 import shutil
-import urllib
 import zipfile
 from datetime import datetime
 from enum import Enum
@@ -83,7 +82,7 @@ class ReleaseType(Enum):
         )
 
 
-class EcoinventInterface:
+class EcoinventInterfaceBase:
     def __init__(
         self,
         username: Optional[str] = None,
@@ -251,6 +250,49 @@ Proceeding anyways as no download error occurred."""
             }
             return filepath
 
+    def _streaming_download(
+        self,
+        url: str,
+        params: dict,
+        directory: Path,
+        filename: str,
+        headers: Optional[dict] = {},
+    ) -> None:
+        with requests.get(
+            url, stream=True, headers=headers, params=params, timeout=60
+        ) as response, open(directory / filename, "wb") as out_file:
+            if response.status_code != 200:
+                raise requests.exceptions.HTTPError(
+                    f"URL '{url}'' returns status code {response.status_code}."
+                )
+            download = response.raw
+            chunk = 128 * 1024
+
+            while True:
+                segment = download.read(chunk)
+                if not segment:
+                    break
+                out_file.write(segment)
+
+    @fresh_login
+    def _download_api_file(
+        self, url: str, filename: str, directory: Path, params: Optional[dict] = {}
+    ) -> Path:
+        url = self.urls["api"] + url
+        headers = {
+            "Authorization": f"Bearer {self.access_token}",
+            "ecoinvent-api-client-library": "ecoinvent_interface",
+            "ecoinvent-api-client-library-version": __version__,
+        } | self.custom_headers
+        self._streaming_download(
+            url=url,
+            params=params,
+            directory=directory,
+            headers=headers,
+            filename=filename,
+        )
+        return directory / filename
+
     @fresh_login
     def _download_s3(
         self, uuid: str, filename: str, url_namespace: str, directory: Path
@@ -262,22 +304,9 @@ Proceeding anyways as no download error occurred."""
             "ecoinvent-api-client-library-version": __version__,
         } | self.custom_headers
         s3_link = requests.get(url, headers=headers, timeout=20).json()["download_url"]
-
-        with urllib.request.urlopen(s3_link, timeout=60) as response, open(
-            directory / filename, "wb"
-        ) as out_file:
-            if response.status != 200:
-                raise urllib.error.HTTPError(
-                    "URL {} returns status code {}.".format(url, response.status)
-                )
-            # Streaming download to reduce memory consumption
-            chunk = 128 * 1024
-            while True:
-                segment = response.read(chunk)
-                if not segment:
-                    break
-                out_file.write(segment)
-
+        self._streaming_download(
+            url=s3_link, params={}, directory=directory, filename=filename
+        )
         return directory / filename
 
     def list_versions(self) -> list:
@@ -286,11 +315,16 @@ Proceeding anyways as no download error occurred."""
     def list_system_models(
         self, version: str, translate: Optional[bool] = True
     ) -> list:
-        releases = [obj["system_model_name"] for obj in self.get_release_files(version)]
+        releases = [
+            obj["system_model_name"]
+            for obj in self._get_files_for_version(version)["releases"]
+        ]
         if translate:
             releases = [SYSTEM_MODELS.get(key, key) for key in releases]
         return releases
 
+
+class EcoinventInterface(EcoinventInterfaceBase):
     def list_report_files(self) -> dict:
         return {obj["name"]: format_dict(obj) for obj in self._get_all_reports()}
 
