@@ -2,6 +2,7 @@ import json
 import logging
 import shutil
 import urllib
+import zipfile
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
@@ -58,11 +59,14 @@ SYSTEM_MODELS_REVERSE = {v: k for k, v in SYSTEM_MODELS.items()}
 
 
 def format_dict(obj: dict) -> dict:
-    return {
+    dct = {
         "uuid": obj["uuid"],  # str
         "size": obj["size"],  # int
         "modified": datetime.fromisoformat(obj["last_modified"]),  # dt
     }
+    if obj.get("description"):
+        dct["description"] = obj["description"]
+    return dct
 
 
 class ReleaseType(Enum):
@@ -143,6 +147,16 @@ class EcoinventInterface:
             response.raise_for_status()
 
     @fresh_login
+    def _get_all_reports(self) -> dict:
+        reports_url = self.urls["api"] + "files/reports"
+        headers = {
+            "Authorization": f"Bearer {self.access_token}",
+            "ecoinvent-api-client-library": "ecoinvent_interface",
+            "ecoinvent-api-client-library-version": __version__,
+        } | self.custom_headers
+        return requests.get(reports_url, headers=headers, timeout=20).json()
+
+    @fresh_login
     def _get_all_files(self) -> dict:
         files_url = self.urls["api"] + "files"
         headers = {
@@ -150,8 +164,7 @@ class EcoinventInterface:
             "ecoinvent-api-client-library": "ecoinvent_interface",
             "ecoinvent-api-client-library-version": __version__,
         } | self.custom_headers
-        files_res = requests.get(files_url, headers=headers, timeout=20)
-        return files_res.json()
+        return requests.get(files_url, headers=headers, timeout=20).json()
 
     def _get_files_for_version(self, version: str) -> dict:
         data = self._get_all_files()
@@ -217,6 +230,19 @@ Proceeding anyways as no download error occurred."""
                     "created": datetime.now().isoformat(),
                 }
                 return directory
+        elif filepath.suffix.lower() == ".zip" and extract:
+            with zipfile.ZipFile(filepath, "r") as archive:
+                directory = filepath.parent / Path(filename).stem
+                if directory.exists():
+                    shutil.rmtree(directory)
+                archive.extractall(path=directory)
+                filepath.unlink()
+                self.storage.catalogue[filename] = {
+                    "path": str(directory),
+                    "extracted": True,
+                    "created": datetime.now().isoformat(),
+                }
+                return directory
         else:
             self.storage.catalogue[filename] = {
                 "path": str(filepath),
@@ -262,6 +288,26 @@ Proceeding anyways as no download error occurred."""
         if translate:
             releases = [SYSTEM_MODELS.get(key, key) for key in releases]
         return releases
+
+    def get_report_files(self) -> dict:
+        return {obj["name"]: format_dict(obj) for obj in self._get_all_reports()}
+
+    def get_report(
+        self,
+        filename: str,
+        extract: Optional[bool] = True,
+        force_redownload: Optional[bool] = False,
+    ) -> Path:
+        reports = self.get_report_files()
+        return self._download_and_cache(
+            filename=filename,
+            uuid=reports[filename]["uuid"],
+            modified=reports[filename]["modified"],
+            expected_size=reports[filename]["size"],
+            url_namespace="report",
+            extract=extract,
+            force_redownload=force_redownload,
+        )
 
     def get_extra_files(self, version: str) -> dict:
         return {
