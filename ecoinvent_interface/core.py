@@ -1,3 +1,4 @@
+import gzip
 import json
 import logging
 import shutil
@@ -257,10 +258,12 @@ Proceeding anyways as no download error occurred."""
         directory: Path,
         filename: str,
         headers: Optional[dict] = {},
+        zipped: Optional[bool] = False,
     ) -> None:
+        out_filepath = directory / (filename + ".gz" if zipped else filename)
         with requests.get(
             url, stream=True, headers=headers, params=params, timeout=60
-        ) as response, open(directory / filename, "wb") as out_file:
+        ) as response, open(out_filepath, "wb") as out_file:
             if response.status_code != 200:
                 raise requests.exceptions.HTTPError(
                     f"URL '{url}'' returns status code {response.status_code}."
@@ -273,6 +276,14 @@ Proceeding anyways as no download error occurred."""
                 if not segment:
                     break
                 out_file.write(segment)
+
+        if zipped:
+            with open(out_filepath, "rb") as source, open(
+                directory / filename, "w"
+            ) as target:
+                gzip_fd = gzip.GzipFile(fileobj=source)
+                target.write(gzip_fd.read().decode("utf-8-sig"))
+            out_filepath.unlink()
 
     @fresh_login
     def _download_api_file(

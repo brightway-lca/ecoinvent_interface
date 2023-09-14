@@ -38,6 +38,9 @@ class ProcessFileType(Enum):
     undefined = "Undefined (unlinked and multi-output) Dataset Report"
 
 
+ZIPPED_FILE_TYPES = (ProcessFileType.lci, ProcessFileType.lcia, ProcessFileType.upr)
+
+
 class EcoinventProcess(EcoinventInterfaceBase):
     def set_release(self, version: str, system_model: str) -> None:
         if version not in self.list_versions():
@@ -97,6 +100,8 @@ class EcoinventProcess(EcoinventInterfaceBase):
             "ecoinvent-api-client-library": "ecoinvent_interface",
             "ecoinvent-api-client-library-version": __version__,
         } | self.custom_headers
+        if meta.get("type").lower() == "xml":
+            headers["Accept"] = "text/plain"
 
         url, params = split_url(meta["url"])
         suffix = meta["type"].lower()
@@ -104,11 +109,22 @@ class EcoinventProcess(EcoinventInterfaceBase):
             f"ecoinvent-{self.version}-{self.system_model}-{file_type.name}-"
             + f"{self.dataset_id}.{suffix}"
         )
+
+        if file_type == ProcessFileType.undefined:
+            s3_link = requests.get(
+                self.urls["api"][:-1] + url, params=params, headers=headers, timeout=20
+            ).json()["download_url"]
+            self._streaming_download(
+                url=s3_link, params={}, directory=directory, filename=filename
+            )
+            return directory / filename
+
         self._streaming_download(
             url=self.urls["api"][:-1] + url,
             params=params,
             directory=directory,
             filename=filename,
             headers=headers,
+            zipped=file_type in ZIPPED_FILE_TYPES,
         )
         return directory / filename
