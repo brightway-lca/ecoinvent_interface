@@ -18,16 +18,10 @@ from .settings import Settings
 from .storage import CachedStorage
 
 
-class NotLoggedIn(BaseException):
-    """Operation not possible because not logged in"""
-
-    pass
-
-
 def logged_in(f):
     def wrapper(self, *args, **kwargs):
         if not hasattr(self, "access_token"):
-            raise NotLoggedIn("Must call `.login()` first")
+            self.login()
         return f(self, *args, **kwargs)
 
     return wrapper
@@ -36,7 +30,7 @@ def logged_in(f):
 def fresh_login(f):
     def wrapper(self, *args, **kwargs):
         if not hasattr(self, "last_refresh"):
-            raise NotLoggedIn("Must call `.login()` first")
+            self.login()
         if time() - self.last_refresh > 120:
             self.refresh_tokens()
         return f(self, *args, **kwargs)
