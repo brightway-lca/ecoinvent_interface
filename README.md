@@ -58,16 +58,16 @@ Secrets files are stored in `ecoinvent_interface.storage.secrets_dir`.
 
 For each value, manually set values always take precedence over environment variables, which in turn take precendence over secrets files.
 
-### `EcoinventInterface` instantiation
+### `EcoinventRelease` instantiation
 
-To interact with the ecoinvent website, instantiate `EcoinventInterface`. You can specify your credentials manually when creating the class instance, or with the approaches outlined above.
+To interact with the ecoinvent website, instantiate `EcoinventRelease`. You can specify your credentials manually when creating the class instance, or with the approaches outlined above.
 
 ```python
-from ecoinvent_interface import EcoinventInterface
-ei = EcoinventInterface()
+from ecoinvent_interface import EcoinventRelease
+ei = EcoinventRelease()
 ```
 
-All operations with `EcoinventInterface` require a valid login:
+All operations with `EcoinventRelease` require a valid login:
 
 ```python
 ei.login()
@@ -85,7 +85,7 @@ ei.list_versions()
  ...]
 ```
 
-### `EcoinventInterface` *extra* files
+### `EcoinventRelease` *extra* files
 
 There are three kinds of files available: *reports*, *documentation* files, and what we call *extra* files. Let's see the *extra* files for version `'3.7.1'`:
 
@@ -106,10 +106,10 @@ This returns a dictionary of filenames and metadata. We can download the 'ecoinv
 ```python
 ei.get_extra(version='3.7.1', filename='ecoinvent 3.7.1_LCIA_implementation.7z')
 >>> PosixPath('/Users/<your username>/Library/Application Support'
-              '/EcoinventInterface/cache/ecoinvent 3.7.1_LCIA_implementation')
+              '/EcoinventRelease/cache/ecoinvent 3.7.1_LCIA_implementation')
 ```
 
-The default cache uses [platformdirs](https://platformdirs.readthedocs.io/en/latest/), and the directory location is OS-dependent. You can use a custom cache directory with by specifying `output_dir` when creating the `EcoinventInterface` class instance.
+The default cache uses [platformdirs](https://platformdirs.readthedocs.io/en/latest/), and the directory location is OS-dependent. You can use a custom cache directory with by specifying `output_dir` when creating the `EcoinventRelease` class instance.
 
 You can work with the cache when offline:
 
@@ -120,13 +120,13 @@ list(cs.catalogue)
 cs.catalogue['ecoinvent 3.7.1_LCIA_implementation.7z']
 >>> {
   'path': '/Users/<your username>/Library/Application Support/'
-          'EcoinventInterface/cache/ecoinvent 3.7.1_LCIA_implementation',
+          'EcoinventRelease/cache/ecoinvent 3.7.1_LCIA_implementation',
   'extracted': True,
   'created': '2023-09-03T20:23:57.186519'
 }
 ```
 
-### `EcoinventInterface` *release* files
+### `EcoinventRelease` *release* files
 
 Most of you are here for the *release* files. We first need to figure what system models are available for our desired version:
 
@@ -135,7 +135,7 @@ ei.list_system_models('3.7.1')
 >>> ['cutoff', 'consequential', 'apos']
 ```
 
-The ecoinvent API uses a short and long form of the system model names; you can get the longer names by passing `translate=False`. You can use either form in all `EcoinventInterface` methods.
+The ecoinvent API uses a short and long form of the system model names; you can get the longer names by passing `translate=False`. You can use either form in all `EcoinventRelease` methods.
 
 ```python
 ei.list_system_models('3.7.1', translate=False)
@@ -160,10 +160,10 @@ See the ecoinvent website for information on what these values mean. We need to 
 ```python
 ei.get_release(version='3.7.1', system_model='apos', release_type=ReleaseType.matrix)
 >>> PosixPath('/Users/<your username>/Library/Application Support/'
-              'EcoinventInterface/cache/universal_matrix_export_3.7.1_apos')
+              'EcoinventRelease/cache/universal_matrix_export_3.7.1_apos')
 ```
 
-### `EcoinventInterface` *reports*
+### `EcoinventRelease` *reports*
 
 Reports require a login but not a version number:
 
@@ -182,7 +182,7 @@ Downloading follows the same pattern as before:
 
 ```python
 ei.get_report('Allocation, cut-off, EN15804_documentation.pdf')
->>> PosixPath('/Users/<your username>/Library/Application Support/EcoinventInterface/cache/Allocation, cut-off, EN15804_documentation.pdf')
+>>> PosixPath('/Users/<your username>/Library/Application Support/EcoinventRelease/cache/Allocation, cut-off, EN15804_documentation.pdf')
 ```
 
 Zip and 7z files are extracted by default.

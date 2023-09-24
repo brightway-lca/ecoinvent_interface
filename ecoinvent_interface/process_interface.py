@@ -7,7 +7,7 @@ from urllib.parse import parse_qsl, urlparse
 import requests
 
 from . import __version__
-from .core import SYSTEM_MODELS, EcoinventInterfaceBase, fresh_login
+from .core import SYSTEM_MODELS, InterfaceBase, fresh_login
 
 logger = logging.getLogger("ecoinvent_interface")
 
@@ -44,7 +44,7 @@ class ProcessFileType(Enum):
 ZIPPED_FILE_TYPES = (ProcessFileType.lci, ProcessFileType.lcia, ProcessFileType.upr)
 
 
-class EcoinventProcess(EcoinventInterfaceBase):
+class EcoinventProcess(InterfaceBase):
     def set_release(self, version: str, system_model: str) -> None:
         if version not in self.list_versions():
             raise ValueError(f"Given version {version} not found")
