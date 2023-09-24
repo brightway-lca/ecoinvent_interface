@@ -1,5 +1,6 @@
 import logging
 import shutil
+import warnings
 import zipfile
 from datetime import datetime
 from enum import Enum
@@ -196,7 +197,13 @@ Proceeding anyways as no download error occurred."""
                     "version": version,
                     "kind": kind,
                 }
-                filepath.unlink()
+                try:
+                    filepath.unlink()
+                except PermissionError:
+                    # Error on Windows during testing
+                    message = """"Can't automatically delete {filepath}
+        Please delete manually"""
+                    warnings.warn(message)
                 message = f"""Adding to cache:
     Filename: {filename}
     Version: {version}
@@ -213,7 +220,14 @@ Proceeding anyways as no download error occurred."""
                 if directory.exists():
                     shutil.rmtree(directory)
                 archive.extractall(path=directory)
-                filepath.unlink()
+                try:
+                    filepath.unlink()
+                except PermissionError:
+                    # Error on Windows during testing
+                    message = """"Can't automatically delete {out_filepath}
+        Please delete manually"""
+                    warnings.warn(message)
+
                 self.storage.catalogue[Path(filename).stem] = {
                     "path": str(directory),
                     "archive": filepath.name,

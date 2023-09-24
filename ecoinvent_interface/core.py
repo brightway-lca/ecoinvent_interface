@@ -1,6 +1,7 @@
 import gzip
 import json
 import logging
+import warnings
 from datetime import datetime
 from pathlib import Path
 from time import time
@@ -236,7 +237,13 @@ class InterfaceBase:
             ) as target:
                 gzip_fd = gzip.GzipFile(fileobj=source)
                 target.write(gzip_fd.read().decode("utf-8-sig"))
-            out_filepath.unlink()
+            try:
+                out_filepath.unlink()
+            except PermissionError:
+                # Error on Windows during testing
+                message = """"Can't automatically delete {out_filepath}
+    Please delete manually"""
+                warnings.warn(message)
 
     @fresh_login
     def _download_api_file(
