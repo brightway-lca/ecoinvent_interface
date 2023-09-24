@@ -17,6 +17,8 @@ from . import __version__
 from .settings import Settings
 from .storage import CachedStorage
 
+logger = logging.getLogger("ecoinvent_interface")
+
 
 def logged_in(f):
     def wrapper(self, *args, **kwargs):
@@ -96,14 +98,16 @@ class EcoinventInterfaceBase:
         self.custom_headers = custom_headers or {}
         self.storage = CachedStorage(settings.output_path)
 
-        message = f"""Instantiated `EcoinventInterface`.
+        message = f"""Instantiated ecoinvent_interface class:
+    Class: {self.__class__.__name__}
+    Instance ID: {id(self)}
     Version: {__version__}
     User: {self.username}
     Output directory: {self.storage.dir}
     Custom headers: {bool(custom_headers)}
     Custom URLs: {bool(urls)}
     """
-        logging.info(message)
+        logger.info(message)
 
     def login(self) -> None:
         post_data = {
@@ -113,6 +117,13 @@ class EcoinventInterfaceBase:
             "grant_type": "password",
         }
         self._get_credentials(post_data)
+        message = """Got initial credentials.
+    Class: {self.__class__.__name__}
+    Instance ID: {id(self)}
+    Version: {__version__}
+    User: {self.username}
+        """
+        logger.debug(message)
 
     @logged_in
     def refresh_tokens(self) -> None:
@@ -122,6 +133,13 @@ class EcoinventInterfaceBase:
             "refresh_token": self.refresh_token,
         }
         self._get_credentials(post_data)
+        message = """Renewed credentials.
+    Class: {self.__class__.__name__}
+    Instance ID: {id(self)}
+    Version: {__version__}
+    User: {self.username}
+        """
+        logger.debug(message)
 
     def _get_credentials(self, post_data: dict) -> None:
         sso_url = self.urls["sso"]
@@ -150,6 +168,14 @@ class EcoinventInterfaceBase:
             "ecoinvent-api-client-library": "ecoinvent_interface",
             "ecoinvent-api-client-library-version": __version__,
         } | self.custom_headers
+        message = """Requesting URL.
+    URL: {reports_url}
+    Class: {self.__class__.__name__}
+    Instance ID: {id(self)}
+    Version: {__version__}
+    User: {self.username}
+        """
+        logger.debug(message)
         return requests.get(reports_url, headers=headers, timeout=20).json()
 
     @fresh_login
@@ -160,6 +186,14 @@ class EcoinventInterfaceBase:
             "ecoinvent-api-client-library": "ecoinvent_interface",
             "ecoinvent-api-client-library-version": __version__,
         } | self.custom_headers
+        message = """Requesting URL.
+    URL: {files_url}
+    Class: {self.__class__.__name__}
+    Instance ID: {id(self)}
+    Version: {__version__}
+    User: {self.username}
+        """
+        logger.debug(message)
         return requests.get(files_url, headers=headers, timeout=20).json()
 
     def _get_files_for_version(self, version: str) -> dict:
@@ -225,6 +259,13 @@ Proceeding anyways as no download error occurred."""
                     "extracted": True,
                     "created": datetime.now().isoformat(),
                 }
+                message = f"""Adding to cache:
+    Filename: {filename}
+    Directory: {directory}
+    Extracted: True
+    Archive format: 7z
+                """
+                logger.debug(message)
                 return directory
         elif filepath.suffix.lower() == ".zip" and extract:
             with zipfile.ZipFile(filepath, "r") as archive:
@@ -238,6 +279,13 @@ Proceeding anyways as no download error occurred."""
                     "extracted": True,
                     "created": datetime.now().isoformat(),
                 }
+                message = f"""Adding to cache:
+    Filename: {filename}
+    Directory: {directory}
+    Extracted: True
+    Archive format: zip
+                """
+                logger.debug(message)
                 return directory
         else:
             self.storage.catalogue[filename] = {
@@ -245,6 +293,12 @@ Proceeding anyways as no download error occurred."""
                 "extracted": False,
                 "created": datetime.now().isoformat(),
             }
+            message = f"""Adding to cache:
+    Filename: {filename}
+    Directory: {directory}
+    Extracted: False
+            """
+            logger.debug(message)
             return filepath
 
     def _streaming_download(
@@ -272,6 +326,17 @@ Proceeding anyways as no download error occurred."""
                 if not segment:
                     break
                 out_file.write(segment)
+
+        message = """Downloaded file with `_streaming_download`.
+    Filename: {filename}
+    Directory: {self.storage.dir}
+    File size (bytes): {actual}
+    Class: {self.__class__.__name__}
+    Instance ID: {id(self)}
+    Version: {__version__}
+    User: {self.username}
+        """
+        logger.debug(message)
 
         if zipped:
             with open(out_filepath, "rb") as source, open(

@@ -1,3 +1,4 @@
+import logging
 from enum import Enum
 from pathlib import Path
 from typing import Union
@@ -7,6 +8,8 @@ import requests
 
 from . import __version__
 from .core import SYSTEM_MODELS, EcoinventInterfaceBase, fresh_login
+
+logger = logging.getLogger("ecoinvent_interface")
 
 
 class MissingProcess(BaseException):
@@ -77,6 +80,14 @@ class EcoinventProcess(EcoinventInterfaceBase):
             headers=headers,
             timeout=20,
         ).json()
+        message = """Requesting URL.
+    URL: {url}
+    Class: {self.__class__.__name__}
+    Instance ID: {id(self)}
+    Version: {__version__}
+    User: {self.username}
+        """
+        logger.debug(message)
 
     def get_basic_info(self) -> dict:
         return self._json_request(self.urls["api"] + "spold")
