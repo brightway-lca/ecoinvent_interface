@@ -9,6 +9,23 @@
 
 This is an **unofficial and unsupported** Python library to get ecoinvent data.
 
+## Quickstart
+
+```python
+from ecoinvent_interface import Settings, EcoinventRelease, ReleaseType
+my_settings = Settings(username="John.Doe", password="example")
+release = EcoinventRelease(my_settings)
+release.list_versions()
+>>> ['3.9.1', '3.9', '3.8', '3.7.1', ...]
+release.list_system_models('3.7.1')
+>>> ['cutoff', 'consequential', 'apos']
+release.get_release(version='3.7.1', system_model='apos', release_type=ReleaseType.ecospold)
+>>> PosixPath('/Users/JohnDoe/Library/Application Support/'
+              'EcoinventRelease/cache/ecoinvent 3.7.1_apos_ecoSpold02')
+```
+
+And the ecospold files are downloaded and extracted automatically.
+
 ## Usage
 
 ### Authentication via `Settings` object
@@ -59,17 +76,12 @@ For each value, manually set values always take precedence over environment vari
 
 ### `EcoinventRelease` instantiation
 
-To interact with the ecoinvent website, instantiate `EcoinventRelease`. You can specify your credentials manually when creating the class instance, or with the approaches outlined above.
+To interact with the ecoinvent website, instantiate `EcoinventRelease`.
 
 ```python
-from ecoinvent_interface import EcoinventRelease
-ei = EcoinventRelease()
-```
-
-All operations with `EcoinventRelease` require a valid login:
-
-```python
-ei.login()
+from ecoinvent_interface import EcoinventRelease, Settings
+my_settings = Settings()
+ei = EcoinventRelease(my_settings)
 ```
 
 You need to choose a valid version. You can list the version identifiers:
@@ -108,7 +120,7 @@ ei.get_extra(version='3.7.1', filename='ecoinvent 3.7.1_LCIA_implementation.7z')
               '/EcoinventRelease/cache/ecoinvent 3.7.1_LCIA_implementation')
 ```
 
-The default cache uses [platformdirs](https://platformdirs.readthedocs.io/en/latest/), and the directory location is OS-dependent. You can use a custom cache directory with by specifying `output_dir` when creating the `EcoinventRelease` class instance.
+The default cache uses [platformdirs](https://platformdirs.readthedocs.io/en/latest/), and the directory location is OS-dependent. You can use a custom cache directory with by specifying `output_dir` when creating the `Settings` class instance.
 
 You can work with the cache when offline:
 
@@ -168,12 +180,15 @@ Reports require a login but not a version number:
 
 ```python
 ei.list_report_files()
->>> {'Allocation, cut-off, EN15804_documentation.pdf': {
+>>> {
+  'Allocation, cut-off, EN15804_documentation.pdf': {
     'uuid': ...,
     'size': ...,
     'modified': datetime.datetime(2021, 10, 1, 0, 0),
-    'description': 'This document provides a documentation on the calculation of the indicators in the “Allocation, cut-off, EN15804” system model.'
-  },
+    'description': ('This document provides a documentation on the calculation '
+                    'of the indicators in the “Allocation, cut-off, EN15804” '
+                    'system model.')
+  }
 }
 ```
 
@@ -196,9 +211,11 @@ Differences with `EIDL`:
 * Username and password can be specified using [pydantic_settings](https://docs.pydantic.dev/latest/usage/pydantic_settings/).
 * Can download all release files, plus reports and "extra" files.
 * Will autocorrect filenames when possible for ecoinvent inconsistencies.
+* Can download data on inventory processes.
+* Can find inventory processes using their filename or attributes.
 * Uses a more robust caching and cache validation strategy.
 * More reasonable token refresh strategy.
-* No HTML or filename string hacks.
+* No HTML parsing or filename string hacks.
 * Streaming downloads.
 * Descriptive logging and error messages.
 * No shortcuts for Brightway or other LCA software.
