@@ -70,7 +70,6 @@ class InterfaceBase:
         urls: Optional[dict] = None,
         custom_headers: Optional[dict] = None,
     ):
-        settings = Settings()
         self.username = settings.username
         if not self.username:
             raise ValueError("Missing username; see configurations docs")
