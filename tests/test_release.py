@@ -1,6 +1,8 @@
+from pathlib import Path
+
 import pytest
 
-from ecoinvent_interface import EcoinventRelease, Settings
+from ecoinvent_interface import EcoinventRelease, ReleaseType, Settings
 from ecoinvent_interface.storage import md5
 
 try:
@@ -60,5 +62,32 @@ def test_get_extra(release):
     assert metadata["created"]
 
 
-# TBD
-# def test_get_release()
+@pytest.mark.slow
+def test_get_release(release):
+    filepath = release.get_release("3.5", "cutoff", ReleaseType.ecospold)
+    metadata = release.storage.catalogue[filepath.name]
+
+    assert filepath.is_dir()
+    assert len(list((Path(metadata["path"]) / "datasets").iterdir())) == 16022
+    assert "ecoinvent 3.5_cutoff_ecoSpold02" in metadata["path"]
+    assert metadata["extracted"]
+    assert metadata["created"]
+    assert metadata["version"] == "3.5"
+    assert metadata["kind"] == "release"
+    assert metadata["archive"] == "ecoinvent 3.5_cutoff_ecoSpold02.7z"
+    assert metadata["system_model"] == "cutoff"
+
+
+@pytest.mark.slow
+def test_get_release_not_extracted(release):
+    filepath = release.get_release("3.4", "cutoff", ReleaseType.ecospold, extract=False)
+    metadata = release.storage.catalogue[filepath.name]
+
+    assert filepath.is_file()
+    assert "ecoinvent 3.4_cutoff_ecoSpold02.7z" in metadata["path"]
+    assert md5(filepath) == "74f05ecd798070ef4db7b351a6b91a4e"
+    assert not metadata["extracted"]
+    assert metadata["created"]
+    assert metadata["version"] == "3.4"
+    assert metadata["kind"] == "release"
+    assert metadata["system_model"] == "cutoff"

@@ -1,14 +1,11 @@
 import gzip
 import json
 import logging
-import shutil
-import zipfile
 from datetime import datetime
 from pathlib import Path
 from time import time
 from typing import Optional
 
-import py7zr
 import requests
 
 from . import __version__
@@ -195,93 +192,6 @@ class InterfaceBase:
             for obj in self._get_files_for_version(version=version)["releases"]
             for dct in obj["release_files"]
         }
-
-    def _download_and_cache(
-        self,
-        filename: str,
-        uuid: str,
-        modified: datetime,
-        expected_size: int,
-        url_namespace: str,
-        extract: Optional[bool] = True,
-        force_redownload: Optional[bool] = False,
-    ) -> Path:
-        if filename in self.storage.catalogue:
-            cache_meta = self.storage.catalogue[filename]
-            cache_fresh = datetime.fromisoformat(cache_meta["created"]) > modified
-            if cache_fresh and not force_redownload:
-                return Path(cache_meta["path"])
-
-        filepath = self._download_s3(
-            uuid=uuid,
-            filename=filename,
-            url_namespace=url_namespace,
-            directory=self.storage.dir,
-        )
-
-        try:
-            actual = filepath.stat().st_size
-            if actual != expected_size:
-                ERROR = f""""Downloaded file doesn't match expected size:
-    Actual: {actual}
-    Expected: {expected_size}
-Proceeding anyways as no download error occurred."""
-                logging.error(ERROR)
-        except KeyError:
-            pass
-
-        if filepath.suffix.lower() == ".7z" and extract:
-            with py7zr.SevenZipFile(filepath, "r") as archive:
-                directory = filepath.parent / Path(filename).stem
-                if directory.exists():
-                    shutil.rmtree(directory)
-                archive.extractall(path=directory)
-                filepath.unlink()
-                self.storage.catalogue[filename] = {
-                    "path": str(directory),
-                    "extracted": True,
-                    "created": datetime.now().isoformat(),
-                }
-                message = f"""Adding to cache:
-    Filename: {filename}
-    Directory: {directory}
-    Extracted: True
-    Archive format: 7z
-                """
-                logger.debug(message)
-                return directory
-        elif filepath.suffix.lower() == ".zip" and extract:
-            with zipfile.ZipFile(filepath, "r") as archive:
-                directory = filepath.parent / Path(filename).stem
-                if directory.exists():
-                    shutil.rmtree(directory)
-                archive.extractall(path=directory)
-                filepath.unlink()
-                self.storage.catalogue[filename] = {
-                    "path": str(directory),
-                    "extracted": True,
-                    "created": datetime.now().isoformat(),
-                }
-                message = f"""Adding to cache:
-    Filename: {filename}
-    Directory: {directory}
-    Extracted: True
-    Archive format: zip
-                """
-                logger.debug(message)
-                return directory
-        else:
-            self.storage.catalogue[filename] = {
-                "path": str(filepath),
-                "extracted": False,
-                "created": datetime.now().isoformat(),
-            }
-            message = f"""Adding to cache:
-    Filename: {filename}
-    Extracted: False
-            """
-            logger.debug(message)
-            return filepath
 
     def _streaming_download(
         self,

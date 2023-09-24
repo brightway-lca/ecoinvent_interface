@@ -1,8 +1,12 @@
 import logging
+import shutil
+import zipfile
+from datetime import datetime
 from enum import Enum
 from pathlib import Path
 from typing import Optional
 
+import py7zr
 from Levenshtein import distance
 
 from .core import SYSTEM_MODELS, InterfaceBase, format_dict
@@ -43,6 +47,9 @@ class EcoinventRelease(InterfaceBase):
             url_namespace="report",
             extract=extract,
             force_redownload=force_redownload,
+            version=None,
+            system_model=None,
+            kind="report",
         )
 
     def list_extra_files(self, version: str) -> dict:
@@ -67,6 +74,9 @@ class EcoinventRelease(InterfaceBase):
             url_namespace="v",
             extract=extract,
             force_redownload=force_redownload,
+            version=version,
+            system_model=None,
+            kind="extra",
         )
 
     def get_release_files(self, version: str) -> list:
@@ -116,4 +126,127 @@ class EcoinventRelease(InterfaceBase):
             url_namespace="r",
             extract=extract,
             force_redownload=force_redownload,
+            version=version,
+            system_model=system_model,
+            kind="release",
         )
+
+    def _download_and_cache(
+        self,
+        filename: str,
+        uuid: str,
+        kind: str,
+        modified: datetime,
+        expected_size: int,
+        url_namespace: str,
+        version: Optional[str] = None,
+        system_model: Optional[str] = None,
+        extract: Optional[bool] = True,
+        force_redownload: Optional[bool] = False,
+    ) -> Path:
+        if filename in self.storage.catalogue:
+            cache_meta = self.storage.catalogue[filename]
+            if (
+                cache_meta["kind"] != kind
+                or cache_meta["system_model"] != system_model
+                or cache_meta["version"] != version
+            ):
+                message = f"""{filename} in cache inconsistent with requested:
+    Cache version: {cache_meta['version']}
+    Requested version: {version}
+    Cache system model: {cache_meta['system_model']}
+    Requested system model: {system_model}
+    Cache kind: {cache_meta['kind']}
+    Requested kind: {kind}"""
+                raise ValueError(message)
+            cache_fresh = datetime.fromisoformat(cache_meta["created"]) > modified
+            if cache_fresh and not force_redownload:
+                return Path(cache_meta["path"])
+
+        filepath = self._download_s3(
+            uuid=uuid,
+            filename=filename,
+            url_namespace=url_namespace,
+            directory=self.storage.dir,
+        )
+
+        try:
+            actual = filepath.stat().st_size
+            if actual != expected_size:
+                ERROR = f""""Downloaded file doesn't match expected size:
+    Actual: {actual}
+    Expected: {expected_size}
+Proceeding anyways as no download error occurred."""
+                logging.error(ERROR)
+        except KeyError:
+            pass
+
+        if filepath.suffix.lower() == ".7z" and extract:
+            with py7zr.SevenZipFile(filepath, "r") as archive:
+                directory = filepath.parent / Path(filename).stem
+                if directory.exists():
+                    shutil.rmtree(directory)
+                archive.extractall(path=directory)
+                self.storage.catalogue[Path(filename).stem] = {
+                    "path": str(directory),
+                    "archive": filepath.name,
+                    "extracted": True,
+                    "created": datetime.now().isoformat(),
+                    "system_model": system_model,
+                    "version": version,
+                    "kind": kind,
+                }
+                filepath.unlink()
+                message = f"""Adding to cache:
+    Filename: {filename}
+    Version: {version}
+    Kind: {kind}
+    Directory: {directory}
+    Extracted: True
+    Archive format: 7z
+                """
+                logger.debug(message)
+                return directory
+        elif filepath.suffix.lower() == ".zip" and extract:
+            with zipfile.ZipFile(filepath, "r") as archive:
+                directory = filepath.parent / Path(filename).stem
+                if directory.exists():
+                    shutil.rmtree(directory)
+                archive.extractall(path=directory)
+                filepath.unlink()
+                self.storage.catalogue[Path(filename).stem] = {
+                    "path": str(directory),
+                    "archive": filepath.name,
+                    "extracted": True,
+                    "created": datetime.now().isoformat(),
+                    "system_model": system_model,
+                    "version": version,
+                    "kind": kind,
+                }
+                message = f"""Adding to cache:
+    Filename: {filename}
+    Version: {version}
+    Kind: {kind}
+    Directory: {directory}
+    Extracted: True
+    Archive format: zip
+                """
+                logger.debug(message)
+                return directory
+        else:
+            self.storage.catalogue[filename] = {
+                "path": str(filepath),
+                "extracted": False,
+                "created": datetime.now().isoformat(),
+                "system_model": system_model,
+                "version": version,
+                "kind": kind,
+            }
+            message = f"""Adding to cache:
+    Filename: {filename}
+    Version: {version}
+    Kind: {kind}
+    Extracted: False
+            """
+            logger.debug(message)
+            return filepath
