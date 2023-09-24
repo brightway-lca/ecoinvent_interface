@@ -55,6 +55,9 @@ jobs:
           pip install .[testing] # install the package and the testing deps
 
       - name: Test with pytest
+        env:
+          EI_USERNAME: ${{ secrets.EI_USERNAME }}
+          EI_PASSWORD: ${{ secrets.EI_PASSWORD }}
         run: |
           pytest
 
