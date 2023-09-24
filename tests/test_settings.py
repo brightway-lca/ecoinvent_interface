@@ -1,4 +1,6 @@
+import os
 from pathlib import Path
+from unittest import mock
 
 import pytest
 from pydantic_settings import SettingsConfigDict
@@ -62,6 +64,8 @@ def test_use_envvar(set_envvar):
     assert settings.output_path == "green"
 
 
+# Environment values set in CI runners for integration tests
+@mock.patch.dict(os.environ, {}, clear=True)
 def test_use_secrets(secrets_tmp_path):
     settings = custom_settings(secrets_tmp_path)
     assert settings.username == "up"
