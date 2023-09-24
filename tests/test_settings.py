@@ -6,14 +6,14 @@ from pydantic_settings import SettingsConfigDict
 from ecoinvent_interface import Settings
 
 
-@pytest.fixture()
+@pytest.fixture
 def set_envvar(monkeypatch):
     monkeypatch.setenv("EI_PASSWORD", "red")
     monkeypatch.setenv("EI_USERNAME", "blue")
     monkeypatch.setenv("EI_OUTPUT_PATH", "green")
 
 
-@pytest.fixture()
+@pytest.fixture
 def secrets_tmp_path(tmp_path):
     dir_path = Path(tmp_path)
 
