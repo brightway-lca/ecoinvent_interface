@@ -279,7 +279,6 @@ Proceeding anyways as no download error occurred."""
             }
             message = f"""Adding to cache:
     Filename: {filename}
-    Directory: {directory}
     Extracted: False
             """
             logger.debug(message)
