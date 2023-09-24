@@ -1,8 +1,9 @@
-from pathlib import Path
-from collections.abc import MutableMapping, Iterable
-from typing import Union
-import shutil
+import hashlib
 import json
+import shutil
+from collections.abc import Iterable, MutableMapping
+from pathlib import Path
+from typing import Union
 
 import platformdirs
 
@@ -53,7 +54,7 @@ class Catalogue(MutableMapping):
 class CachedStorage:
     def __init__(self, cache_dir: Union[None, Path, str] = None):
         if cache_dir:
-            self.dir = Path(dir)
+            self.dir = Path(cache_dir)
         else:
             self.dir = cache_dir_platformdirs
 
@@ -66,3 +67,14 @@ class CachedStorage:
         shutil.rmtree(self.dir, ignore_errors=True)
         (self.dir / "catalogue.json").unlink()
         self.dir.mkdir(exist_ok=True)
+
+
+def md5(filepath: Union[str, Path], blocksize: int = 65536) -> str:
+    """Generate MD5 hash for file at `filepath`"""
+    hasher = hashlib.md5()
+    fo = open(filepath, "rb")
+    buf = fo.read(blocksize)
+    while len(buf) > 0:
+        hasher.update(buf)
+        buf = fo.read(blocksize)
+    return hasher.hexdigest()
