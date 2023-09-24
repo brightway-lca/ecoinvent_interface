@@ -80,26 +80,28 @@ class ReleaseType(Enum):
 class EcoinventInterfaceBase:
     def __init__(
         self,
-        username: Optional[str] = None,
-        password: Optional[str] = None,
-        output_dir: Optional[Path] = None,
+        settings: Settings,
         urls: Optional[dict] = None,
         custom_headers: Optional[dict] = None,
     ):
         settings = Settings()
-        self.username = username or settings.username
-        self.password = password or settings.password
-        self.urls = URLS if urls is None else urls
-        self.custom_headers = custom_headers or {}
-        self.storage = CachedStorage(output_dir or settings.output_path)
+        self.username = settings.username
         if not self.username:
             raise ValueError("Missing username; see configurations docs")
+        self.password = settings.password
         if not self.password:
             raise ValueError("Missing password; see configurations docs")
 
+        self.urls = URLS if urls is None else urls
+        self.custom_headers = custom_headers or {}
+        self.storage = CachedStorage(settings.output_path)
+
         message = f"""Instantiated `EcoinventInterface`.
+    Version: {__version__}
     User: {self.username}
     Output directory: {self.storage.dir}
+    Custom headers: {bool(custom_headers)}
+    Custom URLs: {bool(urls)}
     """
         logging.info(message)
 

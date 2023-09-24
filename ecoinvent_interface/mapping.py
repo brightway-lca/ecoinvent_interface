@@ -5,7 +5,7 @@ from typing import Optional
 import pyecospold
 from tqdm import tqdm
 
-from . import CachedStorage, EcoinventProcess
+from . import CachedStorage, EcoinventProcess, Settings
 
 
 def get_rp_text(exchanges: list) -> str:
@@ -18,14 +18,18 @@ def get_rp_text(exchanges: list) -> str:
 
 
 class ProcessMapping:
-    def __init__(self, storage: Optional[CachedStorage] = None) -> None:
+    def __init__(
+        self, settings: Settings, storage: Optional[CachedStorage] = None
+    ) -> None:
+        self.settings = settings
         self.storage = storage or CachedStorage()
 
     def create_remote_mapping(
-        self, version: str, system_model: str, process: EcoinventProcess, max_id: int
+        self, version: str, system_model: str, max_id: int
     ) -> list:
         remote_data = []
 
+        process = EcoinventProcess(self.settings)
         process.set_release(version, system_model)
 
         for index in tqdm(range(1, max_id + 1)):
