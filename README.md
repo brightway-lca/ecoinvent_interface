@@ -34,7 +34,7 @@ export EI_USERNAME=bob
 export EI_PASSWORD=example
 ```
 
-If your environment variable values have special characters, using single quotes should work, e.g. `export EI_PASSWORD='compl\!cat$d`.
+If your environment variable values have special characters, using single quotes should work, e.g. `export EI_PASSWORD='compl\!cat$d'.
 
 Followed by:
 
