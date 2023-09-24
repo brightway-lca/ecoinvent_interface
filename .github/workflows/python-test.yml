@@ -33,14 +33,14 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        py-version: ["3.8", "3.9", "3.10", "3.11"]
+        py-version: ["3.9", "3.10", "3.11"]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4
 
       # general Python setup
       - name: Set up Python ${{ matrix.py-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.py-version }}
 
@@ -57,3 +57,6 @@ jobs:
       - name: Test with pytest
         run: |
           pytest
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
