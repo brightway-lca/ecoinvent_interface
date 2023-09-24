@@ -12,20 +12,58 @@ This is an **unofficial and unsupported** Python library to get ecoinvent data.
 
 ## Usage
 
-### Authentication
+### Authentication via `Settings` object
 
-Note that you **must accept** the ecoinvent license via the website before using your user account via this library.
+Authentication is done via the `Settings` object. Accessing ecoinvent requires supplying a username and password.
 
-TBD: Environment variables
+Note that you **must accept** the ecoinvent license and personal identifying information agreement on the website before using your user account via this library.
 
-TBD: `.env` file and creation utility
+You can provide credentials in three ways:
+
+* Manually, via arguments to the `Settings` object instantiation:
+
+```python
+from ecoinvent_interface import Settings
+my_settings = Settings(username="bob", password="example")
+```
+
+* Via the `EI_PASSWORD` and `EI_USERNAME` environment variables
+
+```bash
+export EI_USERNAME=bob
+export EI_PASSWORD=example
+```
+
+If your environment variable values have special characters, using single quotes should work, e.g. `export EI_PASSWORD='compl\!cat$d`.
+
+Followed by:
+
+```python
+from ecoinvent_interface import Settings
+# Environment variables read automatically
+my_settings = Settings()
+```
+
+* Or with the use of a [pydantic_settings secrets directory](https://docs.pydantic.dev/latest/usage/pydantic_settings/#secrets). The easiest way to create the correct files is via the utility function `permanent_setting`:
+
+```python
+from ecoinvent_interface import Settings, permanent_setting
+permanent_setting("username", "bob")
+permanent_setting("password", "example")
+# Secrets files read automatically
+my_settings = Settings()
+```
+
+Secrets files are stored in `ecoinvent_interface.storage.secrets_dir`.
+
+For each value, manually set values always take precedence over environment variables, which in turn take precendence over secrets files.
 
 ### `EcoinventInterface` instantiation
 
 To interact with the ecoinvent website, instantiate `EcoinventInterface`. You can specify your credentials manually when creating the class instance, or with the approaches outlined above.
 
 ```python
-from ecoinvent_interface import EcoinventInterface, ReleaseType, CachedStorage
+from ecoinvent_interface import EcoinventInterface
 ei = EcoinventInterface()
 ```
 
