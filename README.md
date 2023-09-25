@@ -24,7 +24,7 @@ release.get_release(version='3.7.1', system_model='apos', release_type=ReleaseTy
               'EcoinventRelease/cache/ecoinvent 3.7.1_apos_ecoSpold02')
 ```
 
-And the ecospold files are downloaded and extracted automatically.
+The ecospold files are downloaded and extracted automatically.
 
 ## Usage
 
@@ -72,9 +72,11 @@ my_settings = Settings()
 
 Secrets files are stored in `ecoinvent_interface.storage.secrets_dir`.
 
-For each value, manually set values always take precedence over environment variables, which in turn take precendence over secrets files.
+For each value, manually set values always *take precedence* over environment variables, which in turn *take precendence* over secrets files.
 
-### `EcoinventRelease` instantiation
+A reasonable guide for choosing between the three is to use secrets on your private, local machine, and to use environment variables on servers or containers.
+
+### `EcoinventRelease` interface
 
 To interact with the ecoinvent website, instantiate `EcoinventRelease`.
 
@@ -84,40 +86,50 @@ my_settings = Settings()
 ei = EcoinventRelease(my_settings)
 ```
 
-You need to choose a valid version. You can list the version identifiers:
+### Database releases
+
+To get a database release, we need to make three selections. First, the version:
 
 ```python
 ei.list_versions()
->>> ['3.9.1',
- '3.9',
- '3.8',
- '3.7.1',
- '3.7',
- ...]
+>>> ['3.9.1', '3.9', '3.8', '3.7.1', ...]
 ```
 
-### `EcoinventRelease` *extra* files
-
-There are three kinds of files available: *reports*, *documentation* files, and what we call *extra* files. Let's see the *extra* files for version `'3.7.1'`:
+Second, the system model:
 
 ```python
-ei.list_extra_files('3.7.1')
->>>  {'ecoinvent 3.7.1_LCIA_implementation.7z': {
-    'uuid': ...,
-    'size': ...,
-    'modified': datetime.datetime(2023, 4, 25, 0, 0)
-  },
-  ...
-}
+ei.list_system_models('3.7.1')
+>>> ['cutoff', 'consequential', 'apos']
 ```
 
-This returns a dictionary of filenames and metadata. We can download the 'ecoinvent 3.7.1_LCIA_implementation.7z' file; by default it will automatically be extracted.
-
+The ecoinvent API uses a short and long form of the system model names; you can get the longer names by passing `translate=False`. You can use either form in all `EcoinventRelease` methods.
 
 ```python
-ei.get_extra(version='3.7.1', filename='ecoinvent 3.7.1_LCIA_implementation.7z')
->>> PosixPath('/Users/<your username>/Library/Application Support'
-              '/EcoinventRelease/cache/ecoinvent 3.7.1_LCIA_implementation')
+ei.list_system_models('3.7.1', translate=False)
+>>> [
+  'Allocation cut-off by classification',
+  'Substitution, consequential, long-term',
+  'Allocation at the Point of Substitution'
+]
+```
+
+Finally, the type of release. These are stored in an `Enum`. There are six release types; if you just want the database to do calculations choose the `ecospold` type.
+
+* `ReleaseType.ecospold`: The single-output unit process files in ecospold2 XML format
+* `ReleaseType.matrix`: The so-called "universal matrix export"
+* `ReleaseType.lci`: LCI data in ecospold2 XML format
+* `ReleaseType.lcia`: LCIA data in ecospold2 XML format
+* `ReleaseType.cumulative_lci`: LCI data in Excel
+* `ReleaseType.cumulative_lcia`: LCIA data in Excel
+
+See the ecoinvent website for more information on what these values mean.
+
+Once we have made a selection for all three choices, we can get the release files. They are saved to a cache directory and extracted by default.
+
+```python
+ei.get_release(version='3.7.1', system_model='apos', release_type=ReleaseType.matrix)
+>>> PosixPath('/Users/JohnDoe/Library/Application Support/'
+              'EcoinventRelease/cache/universal_matrix_export_3.7.1_apos')
 ```
 
 The default cache uses [platformdirs](https://platformdirs.readthedocs.io/en/latest/), and the directory location is OS-dependent. You can use a custom cache directory with by specifying `output_dir` when creating the `Settings` class instance.
@@ -137,41 +149,28 @@ cs.catalogue['ecoinvent 3.7.1_LCIA_implementation.7z']
 }
 ```
 
-### `EcoinventRelease` *release* files
+### `EcoinventRelease` *extra* files
 
-Most of you are here for the *release* files. We first need to figure what system models are available for our desired version:
+There are two other kinds of files available: *reports*, and what we call *extra* files. Let's see the *extra* files for version `'3.7.1'`:
 
 ```python
-ei.list_system_models('3.7.1')
->>> ['cutoff', 'consequential', 'apos']
+ei.list_extra_files('3.7.1')
+>>>  {'ecoinvent 3.7.1_LCIA_implementation.7z': {
+    'uuid': ...,
+    'size': ...,
+    'modified': datetime.datetime(2023, 4, 25, 0, 0)
+  },
+  ...
+}
 ```
 
-The ecoinvent API uses a short and long form of the system model names; you can get the longer names by passing `translate=False`. You can use either form in all `EcoinventRelease` methods.
+This returns a dictionary of filenames and metadata. We can download the `ecoinvent 3.7.1_LCIA_implementation.7z` file; by default it will automatically be extracted.
+
 
 ```python
-ei.list_system_models('3.7.1', translate=False)
->>> [
-  'Allocation cut-off by classification',
-  'Substitution, consequential, long-term',
-  'Allocation at the Point of Substitution'
-]
-```
-
-Release files have one more complication - the release type. You need to choose from one of:
-
-* `ecospold`: The single-output unit process files in ecospold2 XML format
-* `matrix`: The so-called "universaml matrix export"
-* `lci`: LCI data in ecospold2 XML format
-* `lcia`: LCIA data in ecospold2 XML format
-* `cumulative_lci`: LCI data in Excel
-* `cumulative_lcia`: LCIA data in Excel
-
-See the ecoinvent website for information on what these values mean. We need to pass in an option for the `ReleaseType` enum when asking for a release file. We use the enum to guess the filenames.
-
-```python
-ei.get_release(version='3.7.1', system_model='apos', release_type=ReleaseType.matrix)
->>> PosixPath('/Users/<your username>/Library/Application Support/'
-              'EcoinventRelease/cache/universal_matrix_export_3.7.1_apos')
+ei.get_extra(version='3.7.1', filename='ecoinvent 3.7.1_LCIA_implementation.7z')
+>>> PosixPath('/Users/<your username>/Library/Application Support'
+              '/EcoinventRelease/cache/ecoinvent 3.7.1_LCIA_implementation')
 ```
 
 ### `EcoinventRelease` *reports*
