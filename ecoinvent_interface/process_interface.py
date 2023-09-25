@@ -70,6 +70,14 @@ class EcoinventProcess(InterfaceBase):
             "ecoinvent-api-client-library": "ecoinvent_interface",
             "ecoinvent-api-client-library-version": __version__,
         } | self.custom_headers
+        message = """Requesting URL.
+    URL: {url}
+    Class: {self.__class__.__name__}
+    Instance ID: {id(self)}
+    Version: {__version__}
+    User: {self.username}
+        """
+        logger.debug(message)
         return requests.get(
             url,
             params={
@@ -80,14 +88,6 @@ class EcoinventProcess(InterfaceBase):
             headers=headers,
             timeout=20,
         ).json()
-        message = """Requesting URL.
-    URL: {url}
-    Class: {self.__class__.__name__}
-    Instance ID: {id(self)}
-    Version: {__version__}
-    User: {self.username}
-        """
-        logger.debug(message)
 
     def get_basic_info(self) -> dict:
         return self._json_request(self.urls["api"] + "spold")
