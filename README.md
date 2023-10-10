@@ -200,6 +200,89 @@ ei.get_report('Allocation, cut-off, EN15804_documentation.pdf')
 
 Zip and 7z files are extracted by default.
 
+## `EcoinventProcess` interface
+
+This class gets data and reports for specific processes. It first needs to know what release version and system model to work with:
+
+```python
+from ecoinvent_interface import EcoinventProcess, Settings
+my_settings = Settings()
+ep = EcoinventProcess(my_settings)
+ep.set_release(version="3.7.1", system_model="apos")
+```
+
+### Finding a dataset id
+
+The ecoinvent API uses integer indices, and these values aren't found in the release values. We have cached these indices for versions `3.7.1`, `3.8`, and `3.9.1`. If you already know the integer index, you can use that:
+
+```python
+ep.select_process(dataset_id="1")
+```
+
+You can also use the filename, if you know it:
+
+```python
+F = "b0eb27dd-b87f-4ae9-9f69-57d811443a30_66c93e71-f32b-4591-901c-55395db5c132.spold"
+ep.select_process(filename=F)
+ep.dataset_id
+>>> "1"
+```
+
+Finally, you can pass in a set of `attributes`. You should use the name, reference product, and/or location to uniquely identify a process. You don't need to give all attributes, but will get an error if the attributes aren't specific enough.
+
+`attributes` is a dictionary, and can take the following keys: `name` or `activity_name`, `reference product` or `reference_product`, and `location` or `geography`. The system will adapt the names as needed to find a match.
+
+```python
+ep.select_process(
+    attributes={
+        "name": "rye seed production, Swiss integrated production, for sowing",
+        "location": "CH",
+        "reference product": "rye seed, Swiss integrated production, for sowing",
+    }
+)
+ep.dataset_id
+>>> "40"
+```
+
+### Basic process information
+
+Once you have selected the process, you can get basic information about that process:
+
+```python
+ep.get_basic_info()
+>>> {
+  'index': 1,
+  'version': '3.7.1',
+  'system_model': 'apos',
+  'activity_name': 'electricity production, nuclear, boiling water reactor',
+  'geography': 'FI',
+  'reference_product': 'electricity, high voltage',
+  'has_access': True
+}
+ ```
+
+You can also call `ep.get_documentation()` to get a representation of the ecospold2 XML file in Python.
+
+### Process documents
+
+You can use `ep.get_file` with one of the following file types to download process files:
+
+* ProcessFileType.upr: Unit Process ecospold XML
+* ProcessFileType.lci: Life Cycle Inventory ecospold XML
+* ProcessFileType.lcia: Life Cycle Impact Assessment ecospold XML
+* ProcessFileType.pdf: PDF Dataset Report
+* ProcessFileType.undefined: Undefined (unlinked and multi-output) Dataset PDF Report
+
+For example:
+
+```python
+from ecoinvent_interface import ProcessFileType
+from pathlib import Path
+ep.get_file(file_type=ProcessFileType.lcia, directory=Path.cwd())
+```
+
+Would download the life cycle impact assessment ecospold XML file to the current working directory. The `get_file` method requires specifying the `directory`.
+
 # Relationship to EIDL
 
 This library initially started as a fork of [EIDL](https://github.com/haasad/EcoInventDownLoader), the ecoinvent downloader. As of version 2.0, it has been completely rewritten. Currently only the authentication code comes from `EIDL`.
