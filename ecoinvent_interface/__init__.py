@@ -12,8 +12,8 @@ __all__ = [
 
 __version__ = "2.0.dev1"
 
+from .storage import CachedStorage
 from .settings import Settings, permanent_setting
 from .release import EcoinventRelease, ReleaseType
 from .process_interface import EcoinventProcess, ProcessFileType
-from .storage import CachedStorage
 from .mapping import ProcessMapping

@@ -1,7 +1,10 @@
+import json
 import logging
+import zipfile
 from enum import Enum
+from functools import lru_cache
 from pathlib import Path
-from typing import Union
+from typing import Optional, Union
 from urllib.parse import parse_qsl, urlparse
 
 import requests
@@ -9,7 +12,22 @@ import requests
 from . import __version__
 from .core import SYSTEM_MODELS, InterfaceBase, fresh_login
 
+DATA_DIR = Path(__file__).parent.resolve() / "data"
+
 logger = logging.getLogger("ecoinvent_interface")
+
+
+@lru_cache(maxsize=4)
+def get_cached_mapping(version: str, system_model: str) -> dict:
+    zf = zipfile.ZipFile(DATA_DIR / "mappings.zip")
+    try:
+        catalogue = {
+            (o["version"], o["system_model"]): o
+            for o in json.load(zf.open("catalogue.json"))
+        }
+        return json.load(zf.open(catalogue[(version, system_model)]["filename"]))
+    except KeyError:
+        raise KeyError(f"Combination {version} + {system_model} not yet cached")
 
 
 class MissingProcess(BaseException):
@@ -57,10 +75,63 @@ class EcoinventProcess(InterfaceBase):
             )
         self.system_model = system_model
 
-    def select_process(self) -> None:
+    def select_process(
+        self,
+        attributes: Optional[dict] = None,
+        filename: Optional[str] = None,
+        dataset_id: Optional[str] = None,
+    ) -> None:
         if not hasattr(self, "system_model"):
             raise ValueError("Must call `.set_release()` first")
-        self.dataset_id = "1"
+
+        if dataset_id:
+            self.dataset_id = dataset_id
+        elif filename:
+            mapping = {
+                obj["filename"]: obj["index"]
+                for obj in get_cached_mapping(
+                    version=self.version, system_model=self.system_model
+                )
+            }
+            try:
+                self.dataset_id = mapping[filename]
+            except KeyError:
+                raise KeyError(f"Can't find filename `{filename}` in mapping data")
+        elif attributes:
+            label_mapping = {
+                "reference product": "reference_product",
+                "name": "activity_name",
+                "location": "geography",
+            }
+            valid_keys = set(label_mapping).union(set(label_mapping.values()))
+            mapped_attributes = {
+                label_mapping.get(key, key): value
+                for key, value in attributes.items()
+                if key in valid_keys
+            }
+            possibles = [
+                obj
+                for obj in get_cached_mapping(
+                    version=self.version, system_model=self.system_model
+                )
+                if all(
+                    obj.get(key) == value for key, value in mapped_attributes.items()
+                )
+            ]
+            if not possibles:
+                raise KeyError("Can't find a dataset for these attributes")
+            elif len(possibles) > 1:
+                raise KeyError(
+                    "These attributes don't uniquely identify one dataset - "
+                    + f"{len(possibles)} found"
+                )
+            else:
+                self.dataset_id = possibles[0]["index"]
+        else:
+            raise ValueError(
+                "Must give either `attributes`, `filename`, or `integer` to "
+                + "choose a process."
+            )
 
     @selected_process
     @fresh_login
