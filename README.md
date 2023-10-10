@@ -221,7 +221,7 @@ Differences with `EIDL`:
 * Custom library headers are set to allow users of this library to be identified. No user information is transmitted.
 * Comprehensive tests.
 
-## Contributing
+# Contributing
 
 Contributions are very welcome, but please note the following:
 
@@ -231,19 +231,19 @@ Contributions are very welcome, but please note the following:
 
 To learn more, see the [Contributor Guide].
 
-## License
+# License
 
 Distributed under the terms of the [MIT license][license],
 _ecoinvent_interface_ is free and open source software.
 
-## Issues
+# Issues
 
 If you encounter any problems,
 please [file an issue] along with a detailed description.
 
-
 <!-- github-only -->
 
+[file an issue]: https://github.com/brightway-lca/ecoinvent_interface/issues
 [command-line reference]: https://ecoinvent_interface.readthedocs.io/en/latest/usage.html
 [license]: https://github.com/brightway-lca/ecoinvent_interface/blob/main/LICENSE
 [contributor guide]: https://github.com/brightway-lca/ecoinvent_interface/blob/main/CONTRIBUTING.md
