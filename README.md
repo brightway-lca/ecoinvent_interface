@@ -9,7 +9,7 @@
 
 This is an **unofficial and unsupported** Python library to get ecoinvent data.
 
-## Quickstart
+# Quickstart
 
 ```python
 from ecoinvent_interface import Settings, EcoinventRelease, ReleaseType
@@ -26,9 +26,9 @@ release.get_release(version='3.7.1', system_model='apos', release_type=ReleaseTy
 
 The ecospold files are downloaded and extracted automatically.
 
-## Usage
+# Usage
 
-### Authentication via `Settings` object
+## Authentication via `Settings` object
 
 Authentication is done via the `Settings` object. Accessing ecoinvent requires supplying a username and password.
 
@@ -76,7 +76,7 @@ For each value, manually set values always *take precedence* over environment va
 
 A reasonable guide for choosing between the three is to use secrets on your private, local machine, and to use environment variables on servers or containers.
 
-### `EcoinventRelease` interface
+## `EcoinventRelease` interface
 
 To interact with the ecoinvent website, instantiate `EcoinventRelease`.
 
@@ -200,7 +200,7 @@ ei.get_report('Allocation, cut-off, EN15804_documentation.pdf')
 
 Zip and 7z files are extracted by default.
 
-## Relationship to EIDL
+# Relationship to EIDL
 
 This library initially started as a fork of [EIDL](https://github.com/haasad/EcoInventDownLoader), the ecoinvent downloader. As of version 2.0, it has been completely rewritten. Currently only the authentication code comes from `EIDL`.
 
@@ -219,6 +219,7 @@ Differences with `EIDL`:
 * Descriptive logging and error messages.
 * No shortcuts for Brightway or other LCA software.
 * Custom library headers are set to allow users of this library to be identified. No user information is transmitted.
+* Comprehensive tests.
 
 ## Contributing
 
