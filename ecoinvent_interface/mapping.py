@@ -1,3 +1,5 @@
+import json
+import zipfile
 from pathlib import Path
 from time import sleep
 from typing import Optional
@@ -6,6 +8,8 @@ import pyecospold
 from tqdm import tqdm
 
 from . import CachedStorage, EcoinventProcess, Settings
+
+DATA_DIR = Path(__file__).parent.resolve() / "data"
 
 
 def get_rp_text(exchanges: list) -> str:
@@ -75,3 +79,15 @@ class ProcessMapping:
             )
 
         return local_data
+
+
+def get_cached_mapping(version: str, system_model: str) -> dict:
+    zf = zipfile.ZipFile(DATA_DIR / "mappings.zip")
+    try:
+        catalogue = {
+            (o["version"], o["system_model"]): o
+            for o in json.load(zf.open("catalogue.json"))
+        }
+        return json.load(zf.open(catalogue[(version, system_model)]["filename"]))
+    except KeyError:
+        raise KeyError(f"Combination {version} + {system_model} not yet cached")
