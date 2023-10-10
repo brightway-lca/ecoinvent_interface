@@ -45,9 +45,7 @@ class ProcessMapping:
 
     def create_local_mapping(self, key: str, verbose: bool) -> None:
         if key not in self.storage.catalogue:
-            ERROR = (
-                f"{key} not in current catalogue. " "Download the release and retry."
-            )
+            ERROR = f"{key} not in current catalogue. Download the release and retry."
             raise ValueError(ERROR)
 
         dir_path = Path(self.storage.catalogue[key]["path"]) / "datasets"
