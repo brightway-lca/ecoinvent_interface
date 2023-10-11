@@ -233,7 +233,7 @@ class InterfaceBase:
 
         if zipped:
             with open(out_filepath, "rb") as source, open(
-                directory / filename, "w"
+                directory / filename, "w", encoding="utf-8"
             ) as target:
                 gzip_fd = gzip.GzipFile(fileobj=source)
                 target.write(gzip_fd.read().decode("utf-8-sig"))
