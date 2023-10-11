@@ -1,3 +1,7 @@
+## 2.0.1 (2023-10-11)
+
+Fix a Windows encoding problem.
+
 # 2.0 (2023-10-11)
 
 Complete rewrite. This is now an independent library with a completely new API.

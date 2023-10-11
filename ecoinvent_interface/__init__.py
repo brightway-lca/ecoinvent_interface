@@ -10,7 +10,7 @@ __all__ = [
     "Settings",
 ]
 
-__version__ = "2.0"
+__version__ = "2.0.1"
 
 from .storage import CachedStorage
 from .settings import Settings, permanent_setting
