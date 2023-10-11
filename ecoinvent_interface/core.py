@@ -136,7 +136,7 @@ class InterfaceBase:
             self.access_token = tokens["access_token"]
             self.refresh_token = tokens["refresh_token"]
         else:
-            print(
+            warnings.warn(
                 "Given credentials can't log in: error {}".format(response.status_code)
             )
             response.raise_for_status()

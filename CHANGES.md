@@ -1,8 +1,8 @@
-# 2.0.dev1
+# 2.0 (2023-10-11)
 
-* Breaks the API for EIDL. This is now an independent library.
-* New packaging system.
-* Remove Brightway functionality (moved to bw2io)
+Complete rewrite. This is now an independent library with a completely new API.
+
+All Brightway functionality is removed.
 
 # 1.0
 

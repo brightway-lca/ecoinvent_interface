@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pytest
+from pypdf import PdfReader
 
 from ecoinvent_interface import EcoinventRelease, ReleaseType, Settings
 from ecoinvent_interface.storage import md5
@@ -8,9 +9,8 @@ from ecoinvent_interface.storage import md5
 try:
     authenticated_settings = Settings()
     assert authenticated_settings.username
-    HAS_USERNAME = True
 except AssertionError:
-    HAS_USERNAME = False
+    pytest.skip("Requires ecoinvent account", allow_module_level=True)
 
 
 @pytest.fixture
@@ -20,7 +20,20 @@ def release(tmp_path):
     return EcoinventRelease(settings=settings, custom_headers=custom_headers)
 
 
-@pytest.mark.skipif(not HAS_USERNAME, reason="Requires ecoinvent account")
+def test_get_release_files(release):
+    rf = release.get_release_files("3.7.1")
+    assert isinstance(rf, list)
+    assert len(rf) == 3
+    assert rf[0]["system_model_name"] == "Allocation cut-off by classification"
+    assert rf[0]["release_files"][0] == {
+        "uuid": "a18a6292-b5af-477b-814f-593e55ce89a6",
+        "name": "ecoinvent 3.7.1_cutoff_ecoSpold02.7z",
+        "size": 59512955,
+        "last_modified": "2023-04-25",
+        "description": None,
+    }
+
+
 def test_list_report_files(release):
     file_list = release.list_report_files()
     filename = "Allocation, cut-off, EN15804_documentation.pdf"
@@ -29,19 +42,30 @@ def test_list_report_files(release):
         assert file_list[filename][attr]
 
 
-@pytest.mark.skipif(not HAS_USERNAME, reason="Requires ecoinvent account")
 def test_get_report(release):
     filename = "Allocation, cut-off, EN15804_documentation.pdf"
     filepath = release.get_report(filename)
     assert md5(filepath) == "915852190a48fdc07ca6ea32e0ab70fc"
+    assert PdfReader(filepath)
 
     metadata = release.storage.catalogue[filename]
     assert filename in metadata["path"]
     assert not metadata["extracted"]
     assert metadata["created"]
 
+    filename = "ecoinvent 3 report_Agriculture.zip"
+    dirpath = release.get_report(filename)
+    filepath = (
+        dirpath / "ecoinvent 3 report_Crop Production - Seed production processing.pdf"
+    )
+    assert md5(filepath) == "4f9e6b2a9c2022ba815fb28813b8b26e"
+    assert PdfReader(filepath)
 
-@pytest.mark.skipif(not HAS_USERNAME, reason="Requires ecoinvent account")
+    metadata = release.storage.catalogue[filename.replace(".zip", "")]
+    assert metadata["extracted"]
+    assert metadata["created"]
+
+
 def test_list_extra_files(release):
     file_list = release.list_extra_files("3.5")
     filename = "ecoinvent 3.5_APOS_known issues.xlsx"
@@ -50,7 +74,6 @@ def test_list_extra_files(release):
         assert file_list[filename][attr]
 
 
-@pytest.mark.skipif(not HAS_USERNAME, reason="Requires ecoinvent account")
 def test_get_extra(release):
     filename = "ecoinvent 3.5_APOS_known issues.xlsx"
     filepath = release.get_extra("3.5", filename)
