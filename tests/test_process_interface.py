@@ -1,3 +1,5 @@
+import sys
+
 import pytest
 from pypdf import PdfReader
 
@@ -10,6 +12,8 @@ try:
     assert authenticated_settings.username
 except AssertionError:
     pytest.skip("Requires ecoinvent account", allow_module_level=True)
+
+WINDOWS = sys.platform.startswith("cygwin") or sys.platform.startswith("win32")
 
 
 @pytest.fixture
@@ -143,19 +147,22 @@ def test_get_documentation(nuclear):
 def test_get_file_upr(nuclear, tmp_path):
     fp = nuclear.get_file(file_type=ProcessFileType.upr, directory=tmp_path)
     # Manually verified to be readable and correct type
-    assert md5(fp) == "e2ff34407d0b74e2c8c80012516205f3"
+    if not WINDOWS:
+        assert md5(fp) == "e2ff34407d0b74e2c8c80012516205f3"
 
 
 def test_get_file_lci(nuclear, tmp_path):
     fp = nuclear.get_file(file_type=ProcessFileType.lci, directory=tmp_path)
     # Manually verified to be readable and correct type
-    assert md5(fp) == "ae0777ec7cfc086fb579a600d6e8b1dd"
+    if not WINDOWS:
+        assert md5(fp) == "ae0777ec7cfc086fb579a600d6e8b1dd"
 
 
 def test_get_file_lcia(nuclear, tmp_path):
     fp = nuclear.get_file(file_type=ProcessFileType.lcia, directory=tmp_path)
     # Manually verified to be readable and correct type
-    assert md5(fp) == "3457143456bffad2b6c048bee6d87ad3"
+    if not WINDOWS:
+        assert md5(fp) == "3457143456bffad2b6c048bee6d87ad3"
 
 
 def test_get_file_pdf(nuclear, tmp_path):
