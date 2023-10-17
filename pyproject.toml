@@ -40,6 +40,7 @@ tracker = "https://github.com/brightway-lca/ecoinvent_interface/issues"
 
 [project.optional-dependencies]
 testing = [
+    "ecoinvent_interface",
     "pypdf",
     "pytest",
     "pytest-cov",
