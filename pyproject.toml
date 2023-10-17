@@ -1,3 +1,76 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=68.0"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "ecoinvent_interface"
+authors = [
+  { name=" Chris Mutel", email="cmutel@gmail.com" }
+]
+maintainers = [
+  { name=" Chris Mutel", email="cmutel@gmail.com" }
+]
+description = "Unofficial client for interfacing with ecoinvent database"
+readme = "README.md"
+dynamic = ["version"]
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: BSD License",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering",
+]
+requires-python = ">=3.9"
+
+[project.urls]
+source = "https://github.com/brightway-lca/ecoinvent_interface"
+homepage = "https://github.com/brightway-lca/ecoinvent_interface"
+tracker = "https://github.com/brightway-lca/ecoinvent_interface/issues"
+
+[project.optional-dependencies]
+testing = [
+    "setuptools",
+    "pytest",
+    "pytest-cov",
+    "pypdf"
+]
+dev = [
+    "pre-commit",
+    "pylint"
+]
+
+[tool.setuptools]
+license-files = ["LICENSE"]
+include-package-data = true
+packages = ["ecoinvent_interface"]
+
+[tool.setuptools.dynamic]
+version = {attr = "ecoinvent_interface.__version__"}
+
+[tool.pytest.ini_options]
+addopts = "--cov ecoinvent_interface --cov-report term-missing --verbose -m \"not slow\""
+markers = [
+    # Mark tests as slow (deselect with '-m "slow or not slow"')
+    "slow"
+]
+norecursedirs = [
+    "dist",
+    "build",
+    ".tox"
+]
+testpaths = ["tests/*.py"]
+
+[tool.flake8]
+# Some sane defaults for the code style checker flake8
+max_line_length = 88
+extend_ignore = ["E203", "W503"]
+# ^  Black-compatible
+#    E203 and W503 have edge cases handled by black
+exclude = [
+    ".tox",
+    "build",
+    "dist",
+    ".eggs",
+    "docs/conf.py",
+]
