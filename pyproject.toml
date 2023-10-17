@@ -22,6 +22,16 @@ classifiers = [
     "Topic :: Scientific/Engineering",
 ]
 requires-python = ">=3.9"
+dependencies = [
+    "levenshtein",
+    "lxml",
+    "platformdirs",
+    "py7zr",
+    "pydantic-settings",
+    "pyecospold",
+    "requests",
+    "tqdm"
+]
 
 [project.urls]
 source = "https://github.com/brightway-lca/ecoinvent_interface"
@@ -30,14 +40,19 @@ tracker = "https://github.com/brightway-lca/ecoinvent_interface/issues"
 
 [project.optional-dependencies]
 testing = [
-    "setuptools",
+    "pypdf",
     "pytest",
     "pytest-cov",
-    "pypdf"
+    "setuptools",
 ]
 dev = [
+    "build",
     "pre-commit",
-    "pylint"
+    "pylint",
+    "pypdf",
+    "pytest",
+    "pytest-cov",
+    "setuptools",
 ]
 
 [tool.setuptools]
