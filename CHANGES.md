@@ -1,3 +1,7 @@
+## 2.0.1 (2023-10-17)
+
+* Change packaging to `pyproject.toml`
+
 ## 2.0.1 (2023-10-11)
 
 Fix a Windows encoding problem.
