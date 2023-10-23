@@ -143,7 +143,7 @@ class EcoinventRelease(InterfaceBase):
                     if not filepath.suffix.lower() == ".spold":
                         continue
                     for line in zip(open(filepath), range(2)):
-                        print(line)
+                        print(line[0])
                     fix_version_upr(
                         filepath=filepath, major_version=major, minor_version=minor
                     )

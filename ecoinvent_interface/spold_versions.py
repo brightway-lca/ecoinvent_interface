@@ -31,7 +31,7 @@ def fix_version_upr(
         filepath=filepath, major_version=major_version, minor_version=minor_version
     )
 
-    data = objectify.parse(open(filepath)).getroot()
+    data = objectify.parse(open(filepath, encoding="utf-8")).getroot()
     if hasattr(data, "childActivityDataset"):
         ad = getattr(data, "childActivityDataset")
     else:
@@ -58,7 +58,7 @@ def fix_version_meta(
         filepath=filepath, major_version=major_version, minor_version=minor_version
     )
 
-    data = objectify.parse(open(filepath)).getroot()
+    data = objectify.parse(open(filepath, encoding="utf-8")).getroot()
     data.set("majorRelease", str(major_version))
     data.set("minorRelease", str(minor_version))
 
