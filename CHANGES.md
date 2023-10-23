@@ -1,3 +1,7 @@
+## 2.2.1 (2023-10-23)
+
+* Remove some CI debugging code
+
 ## 2.2 (2023-10-23)
 
 * Add default fixing of ecoinvent release `majorRelease` and `minorRelease` values for unit process and metadata XML files

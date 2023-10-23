@@ -142,8 +142,6 @@ class EcoinventRelease(InterfaceBase):
                 for filepath in (result_path / "datasets").iterdir():
                     if not filepath.suffix.lower() == ".spold":
                         continue
-                    for line in zip(open(filepath, encoding="utf-8-sig"), range(2)):
-                        print(line[0])
                     fix_version_upr(
                         filepath=filepath, major_version=major, minor_version=minor
                     )
