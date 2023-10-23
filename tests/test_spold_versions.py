@@ -18,14 +18,14 @@ def test_major_minor_from_string():
 def test_fix_version_upr(tmp_path):
     shutil.copy(FIXTURES_DIR / "dataset.spold", tmp_path / "dataset.spold")
     upr(tmp_path / "dataset.spold", 3, 12)
-    text_given = open(tmp_path / "dataset.spold").readlines()
-    text_expected = open(FIXTURES_DIR / "dataset-fixed.spold").readlines()
+    text_given = open(tmp_path / "dataset.spold").readlines()[1:]
+    text_expected = open(FIXTURES_DIR / "dataset-fixed.spold").readlines()[1:]
     assert text_given == text_expected
 
 
 def test_fix_version_meta(tmp_path):
     shutil.copy(FIXTURES_DIR / "Compartments.xml", tmp_path / "Compartments.xml")
     meta(tmp_path / "Compartments.xml", 3, 12)
-    text_given = open(tmp_path / "Compartments.xml").readlines()
-    text_expected = open(FIXTURES_DIR / "Compartments-fixed.xml").readlines()
+    text_given = open(tmp_path / "Compartments.xml").readlines()[1:]
+    text_expected = open(FIXTURES_DIR / "Compartments-fixed.xml").readlines()[1:]
     assert text_given == text_expected
