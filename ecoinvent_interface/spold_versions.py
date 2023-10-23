@@ -1,8 +1,12 @@
 import os
+import platform
 from pathlib import Path
 from typing import Tuple
 
 from lxml import etree, objectify
+
+WINDOWS = platform.system() == "Windows"
+ENCODING = "Latin1" if WINDOWS else "utf-8"
 
 
 def major_minor_from_string(version: str) -> Tuple[int, int]:
@@ -30,8 +34,7 @@ def fix_version_upr(
     check_inputs(
         filepath=filepath, major_version=major_version, minor_version=minor_version
     )
-
-    data = objectify.parse(open(filepath, encoding="utf-8")).getroot()
+    data = objectify.parse(open(filepath, encoding=ENCODING)).getroot()
     if hasattr(data, "childActivityDataset"):
         ad = getattr(data, "childActivityDataset")
     else:
@@ -44,7 +47,7 @@ def fix_version_upr(
     with open(filepath, "wb") as f:
         f.write(
             etree.tostring(
-                data, encoding="utf8", pretty_print=True, xml_declaration=True
+                data, encoding="utf-8", pretty_print=True, xml_declaration=True
             )
         )
 
@@ -58,13 +61,13 @@ def fix_version_meta(
         filepath=filepath, major_version=major_version, minor_version=minor_version
     )
 
-    data = objectify.parse(open(filepath, encoding="utf-8")).getroot()
+    data = objectify.parse(open(filepath, encoding=ENCODING)).getroot()
     data.set("majorRelease", str(major_version))
     data.set("minorRelease", str(minor_version))
 
     with open(filepath, "wb") as f:
         f.write(
             etree.tostring(
-                data, encoding="utf8", pretty_print=True, xml_declaration=True
+                data, encoding="utf-8", pretty_print=True, xml_declaration=True
             )
         )
