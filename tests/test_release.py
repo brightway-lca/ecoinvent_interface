@@ -106,13 +106,13 @@ def test_get_release(release):
         / "datasets"
         / "daec3a84-14ca-49cb-af09-8945ad764e80_a498d9fb-9402-4374-b2e2-3f85f5d98f43.spold"  # NOQA E503
     )
-    upr_root = objectify.parse(open(upr)).getroot()
+    upr_root = objectify.parse(open(upr, encoding="utf-8")).getroot()
     fa = upr_root.activityDataset.administrativeInformation.fileAttributes
     assert fa.get("majorRelease") == "3"
     assert fa.get("minorRelease") == "5"
 
     meta = filepath / "MasterData" / "Companies.xml"
-    meta_root = objectify.parse(open(meta)).getroot()
+    meta_root = objectify.parse(open(meta, encoding="utf-8")).getroot()
     assert meta_root.get("majorRelease") == "3"
     assert meta_root.get("minorRelease") == "5"
 

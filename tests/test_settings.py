@@ -19,11 +19,11 @@ def set_envvar(monkeypatch):
 def secrets_tmp_path(tmp_path):
     dir_path = Path(tmp_path)
 
-    with open(dir_path / "EI_username", "w") as f:
+    with open(dir_path / "EI_username", "w", encoding="utf-8") as f:
         f.write("up")
-    with open(dir_path / "EI_password", "w") as f:
+    with open(dir_path / "EI_password", "w", encoding="utf-8") as f:
         f.write("down")
-    with open(dir_path / "EI_output_path", "w") as f:
+    with open(dir_path / "EI_output_path", "w", encoding="utf-8") as f:
         f.write("all around")
 
     return dir_path

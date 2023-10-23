@@ -1,3 +1,4 @@
+import io
 import json
 import logging
 import zipfile
@@ -23,9 +24,16 @@ def get_cached_mapping(version: str, system_model: str) -> dict:
     try:
         catalogue = {
             (o["version"], o["system_model"]): o
-            for o in json.load(zf.open("catalogue.json"))
+            for o in json.load(
+                io.TextIOWrapper(zf.open("catalogue.json"), encoding="utf-8")
+            )
         }
-        return json.load(zf.open(catalogue[(version, system_model)]["filename"]))
+        return json.load(
+            io.TextIOWrapper(
+                zf.open(catalogue[(version, system_model)]["filename"]),
+                encoding="utf-8",
+            )
+        )
     except KeyError:
         raise KeyError(f"Combination {version} + {system_model} not yet cached")
 

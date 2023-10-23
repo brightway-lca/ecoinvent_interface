@@ -25,10 +25,10 @@ class Catalogue(MutableMapping):
             self._write({})
 
     def _load(self):
-        return json.load(open(self._filepath))
+        return json.load(open(self._filepath, encoding="utf-8"))
 
     def _write(self, data: dict) -> None:
-        with open(self._filepath, "w") as f:
+        with open(self._filepath, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
 
     def __getitem__(self, key: str) -> dict:

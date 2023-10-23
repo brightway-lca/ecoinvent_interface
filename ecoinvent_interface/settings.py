@@ -35,5 +35,5 @@ def permanent_setting(key: str, value: str) -> None:
     if key not in ("username", "password", "output_path"):
         raise ValueError(f"Invalid setting value {key}")
 
-    with open(secrets_dir / f"EI_{key}", "w") as f:
+    with open(secrets_dir / f"EI_{key}", "w", encoding="utf-8") as f:
         f.write(value)
