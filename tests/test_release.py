@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pytest
+from lxml import objectify
 from pypdf import PdfReader
 
 from ecoinvent_interface import EcoinventRelease, ReleaseType, Settings
@@ -99,6 +100,21 @@ def test_get_release(release):
     assert metadata["kind"] == "release"
     assert metadata["archive"] == "ecoinvent 3.5_cutoff_ecoSpold02.7z"
     assert metadata["system_model"] == "cutoff"
+
+    upr = (
+        filepath
+        / "datasets"
+        / "daec3a84-14ca-49cb-af09-8945ad764e80_a498d9fb-9402-4374-b2e2-3f85f5d98f43.spold"  # NOQA E503
+    )
+    upr_root = objectify.parse(open(upr)).getroot()
+    fa = upr_root.activityDataset.administrativeInformation.fileAttributes
+    assert fa.get("majorRelease") == "3"
+    assert fa.get("minorRelease") == "5"
+
+    meta = filepath / "MasterData" / "Companies.xml"
+    meta_root = objectify.parse(open(meta)).getroot()
+    assert meta_root.get("majorRelease") == "3"
+    assert meta_root.get("minorRelease") == "5"
 
 
 @pytest.mark.slow

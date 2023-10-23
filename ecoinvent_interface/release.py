@@ -11,6 +11,7 @@ import py7zr
 from Levenshtein import distance
 
 from .core import SYSTEM_MODELS, InterfaceBase, format_dict
+from .spold_versions import fix_version_meta, fix_version_upr, major_minor_from_string
 
 logger = logging.getLogger("ecoinvent_interface")
 
@@ -90,6 +91,7 @@ class EcoinventRelease(InterfaceBase):
         release_type: ReleaseType,
         extract: Optional[bool] = True,
         force_redownload: Optional[bool] = False,
+        fix_version: Optional[bool] = True,
     ) -> Path:
         if not isinstance(release_type, ReleaseType):
             raise ValueError("`release_type` must be an instance of `ReleaseType`")
@@ -119,7 +121,7 @@ class EcoinventRelease(InterfaceBase):
                 )
                 raise ValueError(ERROR)
 
-        return self._download_and_cache(
+        result_path = self._download_and_cache(
             filename=filename,
             uuid=available_files[filename]["uuid"],
             modified=available_files[filename]["modified"],
@@ -131,6 +133,28 @@ class EcoinventRelease(InterfaceBase):
             system_model=system_model,
             kind="release",
         )
+
+        SPOLD_FILES = (ReleaseType.ecospold, ReleaseType.lci, ReleaseType.lcia)
+        if fix_version and release_type in SPOLD_FILES:
+            major, minor = major_minor_from_string(version)
+            if (result_path / "datasets").is_dir():
+                logger.info("Fixing versions in unit process datasets")
+                for filepath in (result_path / "datasets").iterdir():
+                    if not filepath.suffix.lower() == ".spold":
+                        continue
+                    fix_version_upr(
+                        filepath=filepath, major_version=major, minor_version=minor
+                    )
+            if (result_path / "MasterData").is_dir():
+                logger.info("Fixing versions in master data")
+                for filepath in (result_path / "MasterData").iterdir():
+                    if not filepath.suffix.lower() == ".xml":
+                        continue
+                    fix_version_meta(
+                        filepath=filepath, major_version=major, minor_version=minor
+                    )
+
+        return result_path
 
     def _download_and_cache(
         self,

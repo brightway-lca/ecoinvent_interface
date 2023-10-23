@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='utf8'?>
+<ecoSpold xmlns="http://www.EcoInvent.org/EcoSpold02">
+  <childActivityDataset>
+    <administrativeInformation>
+      <fileAttributes majorRelease="3" minorRelease="0" majorRevision="3" minorRevision="1" internalSchemaVersion="2.0.11" defaultLanguage="en" creationTimestamp="2011-08-02T09:58:01" lastEditTimestamp="2011-08-02T09:58:01" fileGenerator="Database Layer" fileTimestamp="2011-08-02T09:58:01" contextId="de659012-50c4-4e96-b54a-fc781bf987ab">
+        <contextName xml:lang="en">ecoinvent</contextName>
+      </fileAttributes>
+    </administrativeInformation>
+  </childActivityDataset>
+</ecoSpold>
