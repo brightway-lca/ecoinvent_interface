@@ -1,3 +1,8 @@
+## 2.2 (2023-10-23)
+
+* Add default fixing of ecoinvent release `majorRelease` and `minorRelease` values for unit process and metadata XML files
+* Specification of UTF-8 text encoding on all file calls
+
 ### 2.1.1 (2023-10-17)
 
 * Minor packaging fixes
