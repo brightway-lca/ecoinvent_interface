@@ -62,7 +62,7 @@ def test_get_report(release):
     assert md5(filepath) == "4f9e6b2a9c2022ba815fb28813b8b26e"
     assert PdfReader(filepath)
 
-    metadata = release.storage.catalogue[filename.replace(".zip", "")]
+    metadata = release.storage.catalogue[filename]
     assert metadata["extracted"]
     assert metadata["created"]
 
@@ -89,7 +89,7 @@ def test_get_extra(release):
 @pytest.mark.slow
 def test_get_release(release):
     filepath = release.get_release("3.5", "cutoff", ReleaseType.ecospold)
-    metadata = release.storage.catalogue[filepath.name]
+    metadata = release.storage.catalogue["ecoinvent 3.5_cutoff_ecoSpold02.7z"]
 
     assert filepath.is_dir()
     assert len(list((Path(metadata["path"]) / "datasets").iterdir())) == 16022
