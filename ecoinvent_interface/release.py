@@ -124,6 +124,7 @@ class EcoinventRelease(InterfaceBase):
                 )
                 raise ValueError(ERROR)
 
+        cached = filename in self.storage.catalogue
         result_path = self._download_and_cache(
             filename=filename,
             uuid=available_files[filename]["uuid"],
@@ -138,7 +139,7 @@ class EcoinventRelease(InterfaceBase):
         )
 
         SPOLD_FILES = (ReleaseType.ecospold, ReleaseType.lci, ReleaseType.lcia)
-        if fix_version and release_type in SPOLD_FILES:
+        if fix_version and release_type in SPOLD_FILES and not cached:
             major, minor = major_minor_from_string(version)
             if (result_path / "datasets").is_dir():
                 logger.info("Fixing versions in unit process datasets")
@@ -215,7 +216,7 @@ Proceeding anyways as no download error occurred."""
                 if directory.exists():
                     shutil.rmtree(directory)
                 archive.extractall(path=directory)
-                self.storage.catalogue[Path(filename).stem] = {
+                self.storage.catalogue[filename] = {
                     "path": str(directory),
                     "archive": filepath.name,
                     "extracted": True,
@@ -255,7 +256,7 @@ Proceeding anyways as no download error occurred."""
         Please delete manually"""
                     warnings.warn(message)
 
-                self.storage.catalogue[Path(filename).stem] = {
+                self.storage.catalogue[filename] = {
                     "path": str(directory),
                     "archive": filepath.name,
                     "extracted": True,
