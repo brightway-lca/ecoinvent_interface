@@ -1,3 +1,8 @@
+## 2.3 (2023-11-07)
+
+* Switch to internal, BSD-licensed Levenshtein code
+* Fix not using cache for release archives
+
 ## 2.2.1 (2023-10-23)
 
 * Remove some CI debugging code
