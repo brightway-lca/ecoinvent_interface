@@ -23,7 +23,6 @@ classifiers = [
 ]
 requires-python = ">=3.9"
 dependencies = [
-    "levenshtein",
     "lxml",
     "platformdirs",
     "py7zr",

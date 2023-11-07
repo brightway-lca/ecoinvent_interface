@@ -8,10 +8,10 @@ from pathlib import Path
 from typing import Optional
 
 import py7zr
-from Levenshtein import distance
 
 from .core import SYSTEM_MODELS, InterfaceBase, format_dict
 from .spold_versions import fix_version_meta, fix_version_upr, major_minor_from_string
+from .string_distance import damerau_levenshtein
 
 logger = logging.getLogger("ecoinvent_interface")
 
@@ -106,7 +106,10 @@ class EcoinventRelease(InterfaceBase):
             # just easier to find the closest match and log the correction
             # than build a catalogue of exceptions.
             possible = sorted(
-                [(distance(filename, maybe), maybe) for maybe in available_files]
+                [
+                    (damerau_levenshtein(filename, maybe), maybe)
+                    for maybe in available_files
+                ]
             )[0]
             if possible[0] <= 3:
                 logger.info(
