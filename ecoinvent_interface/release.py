@@ -292,3 +292,63 @@ Proceeding anyways as no download error occurred."""
             """
             logger.debug(message)
             return filepath
+
+
+def get_excel_lcia_file_for_version(release: EcoinventRelease, version: str) -> Path:
+    """
+    The Excel LCIA file has varying names depending on the version. This
+    function download the LCIA file, if necessary, and returns the filepath
+    of the Excel file for further use.
+
+    Parameters
+    ----------
+    release
+        An instance of `EcoinventRelease` with valid settings
+    version
+        The ecoinvent version for which the LCIA file should be found
+
+    Returns
+    -------
+    A `pathlib.Path` filepath
+
+    """
+    if not isinstance(release, EcoinventRelease):
+        raise ValueError("`release` must be an instance of `EcoinventRelease`")
+    if version not in release.list_versions():
+        raise ValueError("Invalid version")
+
+    filelist = release.list_extra_files(version)
+    guess = f"ecoinvent {version}_LCIA_implementation.7z"
+
+    possibles = sorted(
+        [
+            (damerau_levenshtein(given, guess), given)
+            for given in release.list_extra_files(version)
+            if "lcia" in given.lower() and version in given
+        ]
+    )
+    if not possibles:
+        raise ValueError(f"Can't find LCIA file close to {guess} among {filelist}")
+    elif possibles[0][0] > 10:
+        raise ValueError(
+            f"Closest LCIA filename match to {guess} is {filelist[0][1]},"
+            + "but this is too different"
+        )
+    dirpath = release.get_extra(
+        version=version,
+        filename=possibles[0][1],
+    )
+
+    guess = f"LCIA_implementation_{version}.xlsx"
+    filelist = list(dirpath.iterdir())
+    possibles = sorted(
+        [
+            (damerau_levenshtein(filepath.name, guess), filepath)
+            for filepath in filelist
+            if filepath.suffix.lower() == ".xlsx" and version in filepath.name
+        ]
+    )
+    if possibles and possibles[0][0] < 10:
+        return possibles[0][1]
+    else:
+        raise ValueError(f"Can't find LCIA Excel file like {guess} in {filelist}")
