@@ -1,3 +1,7 @@
+## 2.4 (2023-11-08)
+
+* Added `get_excel_lcia_file_for_version` utility function
+
 ## 2.3 (2023-11-07)
 
 * Switch to internal, BSD-licensed Levenshtein code
