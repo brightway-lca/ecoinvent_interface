@@ -1,3 +1,7 @@
+### 2.4.1 (2023-12-07)
+
+* Fix missing f-string in error message
+
 ## 2.4 (2023-11-08)
 
 * Added `get_excel_lcia_file_for_version` utility function
