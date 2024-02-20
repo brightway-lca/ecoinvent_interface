@@ -5,7 +5,7 @@ import zipfile
 from enum import Enum
 from functools import lru_cache
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional, Union, Tuple
 from urllib.parse import parse_qsl, urlparse
 
 import requests
@@ -53,7 +53,7 @@ def selected_process(f):
     return wrapper
 
 
-def split_url(url: str) -> tuple[str, dict]:
+def split_url(url: str) -> Tuple[str, dict]:
     """Split a URL with params into a base path and a params dict"""
     nt = urlparse(url)
     return nt.path, dict(parse_qsl(nt.query))
