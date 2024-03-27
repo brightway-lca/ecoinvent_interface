@@ -229,7 +229,7 @@ Proceeding anyways as no download error occurred."""
                     filepath.unlink()
                 except PermissionError:
                     # Error on Windows during testing
-                    message = """"Can't automatically delete {filepath}
+                    message = f"""Can't automatically delete {filepath}
         Please delete manually"""
                     warnings.warn(message)
                 message = f"""Adding to cache:
@@ -252,7 +252,7 @@ Proceeding anyways as no download error occurred."""
                     filepath.unlink()
                 except PermissionError:
                     # Error on Windows during testing
-                    message = """"Can't automatically delete {out_filepath}
+                    message = f"""Can't automatically delete {filepath}
         Please delete manually"""
                     warnings.warn(message)
 
