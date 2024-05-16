@@ -148,7 +148,7 @@ class EcoinventProcess(InterfaceBase):
             "Authorization": f"Bearer {self.access_token}",
             "ecoinvent-api-client-library": "ecoinvent_interface",
             "ecoinvent-api-client-library-version": __version__,
-        } | self.custom_headers
+        }.update(self.custom_headers)
         message = """Requesting URL.
     URL: {url}
     Class: {self.__class__.__name__}
@@ -189,7 +189,7 @@ class EcoinventProcess(InterfaceBase):
             "Authorization": f"Bearer {self.access_token}",
             "ecoinvent-api-client-library": "ecoinvent_interface",
             "ecoinvent-api-client-library-version": __version__,
-        } | self.custom_headers
+        }.update(self.custom_headers)
         if meta.get("type").lower() == "xml":
             headers["Accept"] = "text/plain"
 

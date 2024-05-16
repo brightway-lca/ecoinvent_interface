@@ -127,7 +127,7 @@ class InterfaceBase:
         headers = {
             "ecoinvent-api-client-library": "ecoinvent_interface",
             "ecoinvent-api-client-library-version": __version__,
-        } | self.custom_headers
+        }.update(self.custom_headers)
         response = requests.post(sso_url, post_data, headers=headers, timeout=20)
 
         if response.ok:
@@ -148,7 +148,7 @@ class InterfaceBase:
             "Authorization": f"Bearer {self.access_token}",
             "ecoinvent-api-client-library": "ecoinvent_interface",
             "ecoinvent-api-client-library-version": __version__,
-        } | self.custom_headers
+        }.update(self.custom_headers)
         message = """Requesting URL.
     URL: {reports_url}
     Class: {self.__class__.__name__}
@@ -166,7 +166,7 @@ class InterfaceBase:
             "Authorization": f"Bearer {self.access_token}",
             "ecoinvent-api-client-library": "ecoinvent_interface",
             "ecoinvent-api-client-library-version": __version__,
-        } | self.custom_headers
+        }.update(self.custom_headers)
         message = """Requesting URL.
     URL: {files_url}
     Class: {self.__class__.__name__}
@@ -254,7 +254,7 @@ class InterfaceBase:
             "Authorization": f"Bearer {self.access_token}",
             "ecoinvent-api-client-library": "ecoinvent_interface",
             "ecoinvent-api-client-library-version": __version__,
-        } | self.custom_headers
+        }.update(self.custom_headers)
         self._streaming_download(
             url=url,
             params=params,
@@ -273,7 +273,7 @@ class InterfaceBase:
             "Authorization": f"Bearer {self.access_token}",
             "ecoinvent-api-client-library": "ecoinvent_interface",
             "ecoinvent-api-client-library-version": __version__,
-        } | self.custom_headers
+        }.update(self.custom_headers)
         s3_link = requests.get(url, headers=headers, timeout=20).json()["download_url"]
         self._streaming_download(
             url=s3_link, params={}, directory=directory, filename=filename
