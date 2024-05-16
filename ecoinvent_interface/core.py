@@ -136,6 +136,8 @@ class InterfaceBase:
             self.last_refresh = time()
             self.access_token = tokens["access_token"]
             self.refresh_token = tokens["refresh_token"]
+        elif response.json()["error_description"] == "Account is not fully set up":
+            raise RuntimeError("Action required: please login to ecoquery to fully set up your account.")
         else:
             warnings.warn(
                 "Given credentials can't log in: error {}".format(response.status_code)
