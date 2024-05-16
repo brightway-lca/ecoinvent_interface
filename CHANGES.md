@@ -1,3 +1,7 @@
+### 2.5 (2024-05-16)
+
+* Add Python 3.8 compatibility via [#24](https://github.com/brightway-lca/ecoinvent_interface/pull/24)
+
 ### 2.4.1 (2023-12-07)
 
 * Fix missing f-string in error message
