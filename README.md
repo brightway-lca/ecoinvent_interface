@@ -4,8 +4,8 @@
 [![Status](https://img.shields.io/pypi/status/ecoinvent_interface.svg)][pypi status]
 [![Python Version](https://img.shields.io/pypi/pyversions/ecoinvent_interface)][pypi status]
 
-[pypi status]: https://pypi.org/project/bw_hestia_bridge/
-[tests]: https://github.com/brightway-lca/bw_hestia_bridge/actions?workflow=Tests
+[pypi status]: https://pypi.org/project/ecoinvent-interface/
+[tests]: https://github.com/brightway-lca/ecoinvent_interface/actions?workflow=Tests
 
 This is an **unofficial and unsupported** Python library to get ecoinvent data.
 
