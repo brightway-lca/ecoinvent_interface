@@ -5,7 +5,7 @@ import zipfile
 from enum import Enum
 from functools import lru_cache
 from pathlib import Path
-from typing import Optional, Union, Tuple
+from typing import Optional, Tuple, Union
 from urllib.parse import parse_qsl, urlparse
 
 import requests

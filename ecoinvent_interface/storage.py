@@ -1,8 +1,9 @@
 import hashlib
 import json
 import shutil
+from collections.abc import MutableMapping
 from pathlib import Path
-from typing import Union, Iterable, MutableMapping
+from typing import Iterable, Union
 
 import platformdirs
 
