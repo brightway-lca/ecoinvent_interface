@@ -136,6 +136,19 @@ class InterfaceBase:
             self.last_refresh = time()
             self.access_token = tokens["access_token"]
             self.refresh_token = tokens["refresh_token"]
+        elif any("error" in key.lower() for key in response.json()):
+            error_messages = [
+                msg for key, msg in response.json().items() if "error" in key.lower()
+            ]
+            if "Account is not fully set up" in error_messages:
+                warnings.warn(
+                    "Action required: please login to ecoquery to update your account."
+                )
+            else:
+                warnings.warn(
+                    f"Error(s) found. Can't login correctly. Error log:\n{error_messages}"
+                )
+            response.raise_for_status()
         else:
             warnings.warn(
                 "Given credentials can't log in: error {}".format(response.status_code)
