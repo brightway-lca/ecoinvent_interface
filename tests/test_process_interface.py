@@ -132,8 +132,14 @@ def test_get_basic_info(nuclear):
         "version": "3.7.1",
         "system_model": "apos",
         "activity_name": "electricity production, nuclear, boiling water reactor",
-        "geography": "FI",
+        "geography": {
+            "comment": None,
+            "long_name": "Finland",
+            "short_name": "FI",
+        },
         "reference_product": "electricity, high voltage",
+        "sector": "Electricity",
+        "unit": "kWh",
         "has_access": True,
     }
     assert nuclear.get_basic_info() == expected
