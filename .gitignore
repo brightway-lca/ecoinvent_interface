@@ -129,3 +129,4 @@ dmypy.json
 .pyre/
 
 dev
+ecoinvent_interface/data/mappings/

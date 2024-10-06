@@ -70,6 +70,10 @@ class ProcessFileType(Enum):
 ZIPPED_FILE_TYPES = (ProcessFileType.lci, ProcessFileType.lcia, ProcessFileType.upr)
 
 
+def as_tuple(version_string: str) -> tuple[int, int]:
+    return tuple([int(x) for x in version_string.split(".")])
+
+
 class EcoinventProcess(InterfaceBase):
     def set_release(self, version: str, system_model: str) -> None:
         if version not in self.list_versions():
@@ -77,9 +81,11 @@ class EcoinventProcess(InterfaceBase):
         self.version = version
 
         system_model = SYSTEM_MODELS.get(system_model, system_model)
-        if system_model not in self.list_system_models(self.version):
+        if system_model == "undefined" and as_tuple(version) >= (3, 10):
+            pass
+        elif system_model not in self.list_system_models(self.version):
             raise ValueError(
-                f"Given system model '{system_model}' not available in {version}"
+                f"Given system model '{system_model}' not available in {version}"  # NOQA E713
             )
         self.system_model = system_model
 
