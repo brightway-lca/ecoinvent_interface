@@ -74,6 +74,9 @@ class InterfaceBase:
         self.password = settings.password
         if not self.password:
             raise ValueError("Missing password; see configurations docs")
+        self.client_id = settings.client_id
+        if not self.client_id:
+            raise ValueError("Missing client_id; see configurations docs")
 
         self.urls = URLS if urls is None else urls
         self.custom_headers = custom_headers or {}
@@ -84,6 +87,7 @@ class InterfaceBase:
     Instance ID: {id(self)}
     Version: {__version__}
     User: {self.username}
+    Client ID: {self.client_id}
     Output directory: {self.storage.dir}
     Custom headers: {bool(custom_headers)}
     Custom URLs: {bool(urls)}
@@ -94,31 +98,33 @@ class InterfaceBase:
         post_data = {
             "username": self.username,
             "password": self.password,
-            "client_id": "apollo-ui",
+            "client_id": self.client_id,
             "grant_type": "password",
         }
         self._get_credentials(post_data)
-        message = """Got initial credentials.
+        message = f"""Got initial credentials.
     Class: {self.__class__.__name__}
     Instance ID: {id(self)}
     Version: {__version__}
     User: {self.username}
+    Client ID: {self.client_id}
         """
         logger.debug(message)
 
     @logged_in
     def refresh_tokens(self) -> None:
         post_data = {
-            "client_id": "apollo-ui",
+            "client_id": self.client_id,
             "grant_type": "refresh_token",
             "refresh_token": self.refresh_token,
         }
         self._get_credentials(post_data)
-        message = """Renewed credentials.
+        message = f"""Renewed credentials.
     Class: {self.__class__.__name__}
     Instance ID: {id(self)}
     Version: {__version__}
     User: {self.username}
+    Client ID: {self.client_id}
         """
         logger.debug(message)
 
@@ -164,12 +170,13 @@ class InterfaceBase:
             "ecoinvent-api-client-library-version": __version__,
         }
         headers.update(self.custom_headers)
-        message = """Requesting URL.
+        message = f"""Requesting URL.
     URL: {reports_url}
     Class: {self.__class__.__name__}
     Instance ID: {id(self)}
     Version: {__version__}
     User: {self.username}
+    Client ID: {self.client_id}
         """
         logger.debug(message)
         return requests.get(reports_url, headers=headers, timeout=20).json()
@@ -183,12 +190,13 @@ class InterfaceBase:
             "ecoinvent-api-client-library-version": __version__,
         }
         headers.update(self.custom_headers)
-        message = """Requesting URL.
+        message = f"""Requesting URL.
     URL: {files_url}
     Class: {self.__class__.__name__}
     Instance ID: {id(self)}
     Version: {__version__}
     User: {self.username}
+    Client ID: {self.client_id}
         """
         logger.debug(message)
         return requests.get(files_url, headers=headers, timeout=20).json()

@@ -13,6 +13,7 @@ class Settings(BaseSettings):
 
     username: Optional[str] = None
     password: Optional[str] = None
+    client_id: str = "brightway-ei"
     output_path: Optional[str] = None
 
 
