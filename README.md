@@ -81,7 +81,7 @@ A reasonable guide for choosing between the three is to use secrets on your priv
 To interact with the ecoinvent website, instantiate `EcoinventRelease`.
 
 ```python
-from ecoinvent_interface import EcoinventRelease, Settings
+from ecoinvent_interface import EcoinventRelease, Settings, ReleaseType
 my_settings = Settings()
 ei = EcoinventRelease(my_settings)
 ```
@@ -213,7 +213,7 @@ ep.set_release(version="3.7.1", system_model="apos")
 
 ### Finding a dataset id
 
-The ecoinvent API uses integer indices, and these values aren't found in the release values. We have cached these indices for versions `3.7.1`, `3.8`, and `3.9.1`. If you already know the integer index, you can use that:
+The ecoinvent API uses integer indices, and these values aren't found in the release values. We have cached these indices for versions `3.5`, `3.6`, `3.7.1`, `3.8`, `3.9.1`, and `3.10`. If you already know the integer index, you can use that:
 
 ```python
 ep.select_process(dataset_id="1")
@@ -230,7 +230,13 @@ ep.dataset_id
 
 Finally, you can pass in a set of `attributes`. You should use the name, reference product, and/or location to uniquely identify a process. You don't need to give all attributes, but will get an error if the attributes aren't specific enough.
 
-`attributes` is a dictionary, and can take the following keys: `name` or `activity_name`, `reference product` or `reference_product`, and `location` or `geography`. The system will adapt the names as needed to find a match.
+`attributes` is a dictionary, and can take the following keys:
+
+* `name` or `activity_name`
+* `reference product` or `reference_product`
+* `location` or `geography`
+
+The system will adapt the names as needed to find a match.
 
 ```python
 ep.select_process(
@@ -243,6 +249,8 @@ ep.select_process(
 ep.dataset_id
 >>> "40"
 ```
+
+Dataset id values are the same across all system models and versions; however, not every system model or version will have all datasets.
 
 ### Basic process information
 
@@ -273,7 +281,7 @@ You can use `ep.get_file` with one of the following file types to download proce
 * ProcessFileType.pdf: PDF Dataset Report
 * ProcessFileType.undefined: Undefined (unlinked and multi-output) Dataset PDF Report
 
-For example:
+For example, running the following would download the life cycle impact assessment ecospold XML file to the current working directory. The `get_file` method requires specifying the `directory`.
 
 ```python
 from ecoinvent_interface import ProcessFileType
@@ -281,7 +289,23 @@ from pathlib import Path
 ep.get_file(file_type=ProcessFileType.lcia, directory=Path.cwd())
 ```
 
-Would download the life cycle impact assessment ecospold XML file to the current working directory. The `get_file` method requires specifying the `directory`.
+Here is a complete example for downloading a PDF dataset report:
+
+```python
+from ecoinvent_interface import EcoinventProcess, Settings, ProcessFileType
+from pathlib import Path
+my_settings = Settings()
+ep = EcoinventProcess(my_settings)
+ep.set_release(version="3.7.1", system_model="apos")
+ep.select_process(
+    attributes={
+        "name": "rye seed production, Swiss integrated production, for sowing",
+        "location": "CH",
+        "reference product": "rye seed, Swiss integrated production, for sowing",
+    }
+)
+ep.get_file(file_type=ProcessFileType.pdf, directory=Path.cwd())
+```
 
 # Relationship to EIDL
 
