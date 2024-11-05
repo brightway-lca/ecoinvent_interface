@@ -4,7 +4,11 @@ import pytest
 from pypdf import PdfReader
 
 from ecoinvent_interface import EcoinventProcess, ProcessFileType, Settings
-from ecoinvent_interface.process_interface import MissingProcess, get_cached_mapping
+from ecoinvent_interface.process_interface import (
+    MissingProcess,
+    as_tuple,
+    get_cached_mapping,
+)
 from ecoinvent_interface.storage import md5
 
 try:
@@ -24,6 +28,17 @@ def process(tmp_path):
     custom_headers = {"ecoinvent-api-client-library-is-test": "true"}
     ep = EcoinventProcess(settings=settings, custom_headers=custom_headers)
     ep.set_release(version="3.7.1", system_model="apos")
+    return ep
+
+
+@pytest.fixture
+def undefined(tmp_path):
+    get_cached_mapping.cache_clear()
+
+    settings = Settings(output_path=str(tmp_path))
+    custom_headers = {"ecoinvent-api-client-library-is-test": "true"}
+    ep = EcoinventProcess(settings=settings, custom_headers=custom_headers)
+    ep.set_release(version="3.10", system_model="undefined")
     return ep
 
 
@@ -145,6 +160,22 @@ def test_get_basic_info(nuclear):
     assert nuclear.get_basic_info() == expected
 
 
+def test_get_basic_info_undefined(undefined):
+    undefined.select_process(dataset_id="42140")
+    expected = {
+        "index": 42140,
+        "version": "3.10",
+        "system_model": "undefined",
+        "activity_name": "1,1-difluoroethane production",
+        "geography": {"comment": None, "short_name": "GLO", "long_name": "Global"},
+        "reference_product": "",
+        "has_access": True,
+        "unit": None,
+        "sector": "Chemicals",
+    }
+    assert undefined.get_basic_info() == expected
+
+
 def test_get_documentation(nuclear):
     result = nuclear.get_documentation()
     assert result["id"] == "b0eb27dd-b87f-4ae9-9f69-57d811443a30"
@@ -183,3 +214,8 @@ def test_get_file_undefined(nuclear, tmp_path):
     # Manually verified to be readable and correct type
     assert md5(fp) == "052f51f3fbb79a13a78753e9ff40428a"
     assert PdfReader(fp)
+
+
+def test_as_tuple():
+    assert as_tuple("3.10") == (3, 10)
+    assert as_tuple("3.10") > (3, 9)
