@@ -1,3 +1,8 @@
+### 2.6 (2024-11-05)
+
+* Add cached process index mappings for ecoinvent 3.5, 3.6, and 3.10
+* Add helper functions for generating and saving cached process index mappings
+
 ### 2.5 (2024-05-16)
 
 * Add Python 3.8 compatibility via [#24](https://github.com/brightway-lca/ecoinvent_interface/pull/24)

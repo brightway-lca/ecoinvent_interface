@@ -11,7 +11,7 @@ __all__ = [
     "get_excel_lcia_file_for_version",
 ]
 
-__version__ = "2.5"
+__version__ = "2.6"
 
 from .storage import CachedStorage
 from .settings import Settings, permanent_setting
