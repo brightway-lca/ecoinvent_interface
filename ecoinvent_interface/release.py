@@ -25,9 +25,13 @@ class ReleaseType(Enum):
     cumulative_lcia = "ecoinvent {version}_{system_model_abbr}_cumulative_lcia_xlsx.7z"
 
     def filename(self, version: str, system_model_abbr: str) -> str:
-        return self.value.format(
+        guess = self.value.format(
             **{"version": version, "system_model_abbr": system_model_abbr}
         )
+        CORRECTIONS = {
+            "ecoinvent 3.6_cutoff_ecoSpold02.7z": "ecoinvent 3.6_cut-off_ecoSpold02.7z"
+        }
+        return CORRECTIONS.get(guess, guess)
 
 
 class EcoinventRelease(InterfaceBase):
