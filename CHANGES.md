@@ -1,3 +1,7 @@
+### 3.0 (2024-11-25)
+
+* Update login flow to match new ecoquery authentication
+
 ### 2.6 (2024-11-05)
 
 * Add cached process index mappings for ecoinvent 3.5, 3.6, and 3.10
