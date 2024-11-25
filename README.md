@@ -9,6 +9,10 @@
 
 This is an **unofficial and unsupported** Python library to get ecoinvent data.
 
+> [!WARNING]  
+> 😯 Versions older than 3.0 of `ecoinvent-interface` will stop working as of February 2025.
+> Please update as soon as possible ❗
+
 # Quickstart
 
 ```python
