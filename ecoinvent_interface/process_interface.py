@@ -70,7 +70,7 @@ class ProcessFileType(Enum):
 ZIPPED_FILE_TYPES = (ProcessFileType.lci, ProcessFileType.lcia, ProcessFileType.upr)
 
 
-def as_tuple(version_string: str) -> tuple[int, int]:
+def as_tuple(version_string: str) -> Tuple[int, int]:
     return tuple([int(x) for x in version_string.split(".")])
 
 
