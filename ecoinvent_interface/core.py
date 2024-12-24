@@ -179,7 +179,10 @@ class InterfaceBase:
     Client ID: {self.client_id}
         """
         logger.debug(message)
-        return requests.get(reports_url, headers=headers, timeout=20).json()
+        response = requests.get(reports_url, headers=headers, timeout=20).json()
+        if response == {"detail": "Forbidden"}:
+            raise PermissionError("Your license doesn't permit report access")
+        return response
 
     @fresh_login
     def _get_all_files(self) -> dict:
@@ -199,7 +202,10 @@ class InterfaceBase:
     Client ID: {self.client_id}
         """
         logger.debug(message)
-        return requests.get(files_url, headers=headers, timeout=20).json()
+        response = requests.get(files_url, headers=headers, timeout=20).json()
+        if response == {"detail": "Files not found"}:
+            raise PermissionError("Your license doesn't permit file access")
+        return response
 
     def _get_files_for_version(self, version: str) -> dict:
         data = self._get_all_files()
@@ -228,9 +234,12 @@ class InterfaceBase:
         zipped: Optional[bool] = False,
     ) -> None:
         out_filepath = directory / (filename + ".gz" if zipped else filename)
-        with requests.get(
-            url, stream=True, headers=headers, params=params, timeout=60
-        ) as response, open(out_filepath, "wb") as out_file:
+        with (
+            requests.get(
+                url, stream=True, headers=headers, params=params, timeout=60
+            ) as response,
+            open(out_filepath, "wb") as out_file,
+        ):
             if response.status_code != 200:
                 raise requests.exceptions.HTTPError(
                     f"URL '{url}'' returns status code {response.status_code}."
@@ -256,9 +265,10 @@ class InterfaceBase:
         logger.debug(message)
 
         if zipped:
-            with open(out_filepath, "rb") as source, open(
-                directory / filename, "w", encoding="utf-8"
-            ) as target:
+            with (
+                open(out_filepath, "rb") as source,
+                open(directory / filename, "w", encoding="utf-8") as target,
+            ):
                 gzip_fd = gzip.GzipFile(fileobj=source)
                 target.write(gzip_fd.read().decode("utf-8-sig"))
             try:
