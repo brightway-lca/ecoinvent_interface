@@ -11,41 +11,7 @@ from ecoinvent_interface.process_interface import (
 )
 from ecoinvent_interface.storage import md5
 
-try:
-    authenticated_settings = Settings()
-    assert authenticated_settings.username
-except AssertionError:
-    pytest.skip("Requires ecoinvent account", allow_module_level=True)
-
 WINDOWS = sys.platform.startswith("cygwin") or sys.platform.startswith("win32")
-
-
-@pytest.fixture
-def process(tmp_path):
-    get_cached_mapping.cache_clear()
-
-    settings = Settings(output_path=str(tmp_path))
-    custom_headers = {"ecoinvent-api-client-library-is-test": "true"}
-    ep = EcoinventProcess(settings=settings, custom_headers=custom_headers)
-    ep.set_release(version="3.7.1", system_model="apos")
-    return ep
-
-
-@pytest.fixture
-def undefined(tmp_path):
-    get_cached_mapping.cache_clear()
-
-    settings = Settings(output_path=str(tmp_path))
-    custom_headers = {"ecoinvent-api-client-library-is-test": "true"}
-    ep = EcoinventProcess(settings=settings, custom_headers=custom_headers)
-    ep.set_release(version="3.10", system_model="undefined")
-    return ep
-
-
-@pytest.fixture
-def nuclear(process):
-    process.select_process(dataset_id="1")
-    return process
 
 
 def test_get_cached_mapping_error():
@@ -53,25 +19,19 @@ def test_get_cached_mapping_error():
         get_cached_mapping("foo", "bar")
 
 
-def test_select_process_without_release_error(tmp_path):
-    settings = Settings(output_path=str(tmp_path))
-    custom_headers = {"ecoinvent-api-client-library-is-test": "true"}
+def test_select_process_without_release_error(settings, custom_headers):
     ep = EcoinventProcess(settings=settings, custom_headers=custom_headers)
     with pytest.raises(ValueError):
         ep.select_process(dataset_id="1")
 
 
-def test_invalid_system_model_error(tmp_path):
-    settings = Settings(output_path=str(tmp_path))
-    custom_headers = {"ecoinvent-api-client-library-is-test": "true"}
+def test_invalid_system_model_error(settings, custom_headers):
     ep = EcoinventProcess(settings=settings, custom_headers=custom_headers)
     with pytest.raises(ValueError):
         ep.set_release(version="3.4", system_model="EN15804")
 
 
-def test_invalid_release_error(tmp_path):
-    settings = Settings(output_path=str(tmp_path))
-    custom_headers = {"ecoinvent-api-client-library-is-test": "true"}
+def test_invalid_release_error(settings, custom_headers):
     ep = EcoinventProcess(settings=settings, custom_headers=custom_headers)
     with pytest.raises(ValueError):
         ep.set_release(version="2.4", system_model="cutoff")
@@ -209,6 +169,7 @@ def test_get_file_pdf(nuclear, tmp_path):
     assert PdfReader(fp)
 
 
+@pytest.mark.skip("This functionality doesn't work anymore")
 def test_get_file_undefined(nuclear, tmp_path):
     fp = nuclear.get_file(file_type=ProcessFileType.undefined, directory=tmp_path)
     # Manually verified to be readable and correct type

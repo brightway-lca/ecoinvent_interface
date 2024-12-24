@@ -4,21 +4,8 @@ import pytest
 from lxml import objectify
 from pypdf import PdfReader
 
-from ecoinvent_interface import EcoinventRelease, ReleaseType, Settings
+from ecoinvent_interface import ReleaseType
 from ecoinvent_interface.storage import md5
-
-try:
-    authenticated_settings = Settings()
-    assert authenticated_settings.username
-except AssertionError:
-    pytest.skip("Requires ecoinvent account", allow_module_level=True)
-
-
-@pytest.fixture
-def release(tmp_path):
-    settings = Settings(output_path=str(tmp_path))
-    custom_headers = {"ecoinvent-api-client-library-is-test": "true"}
-    return EcoinventRelease(settings=settings, custom_headers=custom_headers)
 
 
 def test_get_release_files(release):
