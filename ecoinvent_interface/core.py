@@ -202,10 +202,10 @@ class InterfaceBase:
     Client ID: {self.client_id}
         """
         logger.debug(message)
-        response = requests.get(files_url, headers=headers, timeout=20).json()
-        if response == {"detail": "Files not found"}:
+        response = requests.get(files_url, headers=headers, timeout=20)
+        if response.status_code == 404:
             raise PermissionError("Your license doesn't permit file access")
-        return response
+        return response.json()
 
     def _get_files_for_version(self, version: str) -> dict:
         data = self._get_all_files()
