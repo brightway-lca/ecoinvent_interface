@@ -180,7 +180,7 @@ class InterfaceBase:
         """
         logger.debug(message)
         response = requests.get(reports_url, headers=headers, timeout=20).json()
-        if response == {"detail": "Forbidden"}:
+        if response.status_code == 401:
             raise PermissionError("Your license doesn't permit report access")
         return response
 
