@@ -1,13 +1,20 @@
-### 3.0 (2024-11-25)
+###
+
+## 3.1 (2025-01-10)
+
+* [#41: Catch license errors and provide meaningful feedback](https://github.com/brightway-lca/ecoinvent_interface/pull/41)
+* [#39: Update mappings for ecoinvent 3.10.1 and 3.11](https://github.com/brightway-lca/ecoinvent_interface/pull/39)
+
+# 3.0 (2024-11-25)
 
 * Update login flow to match new ecoquery authentication
 
-### 2.6 (2024-11-05)
+## 2.6 (2024-11-05)
 
 * Add cached process index mappings for ecoinvent 3.5, 3.6, and 3.10
 * Add helper functions for generating and saving cached process index mappings
 
-### 2.5 (2024-05-16)
+## 2.5 (2024-05-16)
 
 * Add Python 3.8 compatibility via [#24](https://github.com/brightway-lca/ecoinvent_interface/pull/24)
 
