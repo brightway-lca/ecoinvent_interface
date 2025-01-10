@@ -179,10 +179,10 @@ class InterfaceBase:
     Client ID: {self.client_id}
         """
         logger.debug(message)
-        response = requests.get(reports_url, headers=headers, timeout=20).json()
+        response = requests.get(reports_url, headers=headers, timeout=20)
         if response.status_code == 401:
             raise PermissionError("Your license doesn't permit report access")
-        return response
+        return response.json()
 
     @fresh_login
     def _get_all_files(self) -> dict:
