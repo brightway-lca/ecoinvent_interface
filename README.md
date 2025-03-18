@@ -136,7 +136,7 @@ ei.get_release(version='3.7.1', system_model='apos', release_type=ReleaseType.ma
               'EcoinventRelease/cache/universal_matrix_export_3.7.1_apos')
 ```
 
-The default cache uses [platformdirs](https://platformdirs.readthedocs.io/en/latest/), and the directory location is OS-dependent. You can use a custom cache directory with by specifying `output_dir` when creating the `Settings` class instance.
+The default cache uses [platformdirs](https://platformdirs.readthedocs.io/en/latest/), and the directory location is OS-dependent. You can use a custom cache directory with by specifying `output_path` when creating the `Settings` class instance.
 
 You can work with the cache when offline:
 
